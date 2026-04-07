@@ -12,6 +12,7 @@
 - 不要为了“显得完整”生成大量无法运行、无法验证、没有边界的样板代码。
 - 如果上下文窗口或 token 不足，请优先完整交付 `Must`，再处理 `Should`，最后处理 `Nice-to-have`。
 - 如果你跳过了 `Should` 或 `Nice-to-have` 项，不要假装已经完成；请明确说明哪些被延期。
+- 源码、标识符、注释、配置键名、环境变量名、fixture 和 seed 数据统一使用英文。用户可见文案与本地化文档的初始交付语言策略取决于当前 Prompt 版本：中文 Prompt 交付 `中文 + 英文`。
 
 ## 2. 交付优先级
 
@@ -303,6 +304,7 @@ apps/web/src
 - 系统主题作为默认行为
 - 中文 / 英文
 - 所有用户可见文案必须走 i18n
+- 初始交付必须至少包含 `zh-CN` 与 `en` 两套语言包
 - 所有设计值必须走 token
 - token 至少覆盖 `color`、`spacing`、`radius`、`shadow`、`typography`、`z-index`
 - 颜色命名必须语义化，例如 `--color-bg-default`、`--color-text-primary`
@@ -619,10 +621,10 @@ apps/web/src
 - `make build`
 - `make check`
 - `make generate-sdk`
-- `make db:migrate`
-- `make db:seed`
-- `make db:reset`
-- `make db:studio`
+- `make db-migrate`
+- `make db-seed`
+- `make db-reset`
+- `make db-studio`
 - `make clean`
 - `make docker-build`
 - `make docker-run`
@@ -634,7 +636,7 @@ apps/web/src
 - `make dev` 通过 `turbo dev`、`concurrently` 或等价方案并发启动前后端
 - `make dev` 运行前必须确保 `mysql` 和 `redis` 已可用；可以自动执行 `docker compose up -d mysql redis`，或在缺失时给出明确提示
 - `make check` 至少串联 `lint`、`knip`、`typecheck`、`test`、`build`
-- 提供 `make db:studio`，用于开发阶段启动 Prisma Studio
+- 提供 `make db-studio`，用于开发阶段启动 Prisma Studio
 
 ### 14.2 Turbo 配置
 

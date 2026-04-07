@@ -14,7 +14,7 @@ Feed [PROMPT.md](PROMPT.md) to an LLM and get a fully runnable project including
 - **API Contract** — Zod unified schema → OpenAPI → Orval auto-generated typed SDK
 - **Example Business Module** — Full User Management flow (Frontend Page → SDK → Controller → Use Case → Repository → MySQL/Redis)
 - **Engineering Tooling** — ESLint + Prettier + Husky + commitlint + Knip + Vitest + Makefile + Docker + CI
-- **Documentation** — Bilingual README, architecture docs, conventions, CLAUDE.md / AGENTS.md
+- **Documentation** — English + localized README pair, architecture docs, conventions, CLAUDE.md / AGENTS.md
 
 ## How to Use
 

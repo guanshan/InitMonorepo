@@ -1,0 +1,60 @@
+{
+  "name": "@real-demo/workspace",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=24.12.0"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "build:packages": "pnpm --filter @real-demo/shared build && pnpm --filter @real-demo/ui build && pnpm --filter @real-demo/sdk build",
+    "dev": "turbo dev --parallel",
+    "dev:web": "pnpm --filter @real-demo/web dev",
+    "dev:server": "pnpm --filter @real-demo/server dev",
+    "openapi": "pnpm --filter @real-demo/server openapi",
+    "generate": "pnpm generate-sdk",
+    "generate-sdk": "pnpm --filter @real-demo/shared build && pnpm --filter @real-demo/server prisma:generate && pnpm openapi && pnpm --filter @real-demo/sdk generate-sdk",
+    "db:migrate": "pnpm --filter @real-demo/server db:migrate",
+    "db:seed": "pnpm --filter @real-demo/server prisma:seed",
+    "db:reset": "pnpm --filter @real-demo/server db:reset",
+    "db:studio": "pnpm --filter @real-demo/server db:studio",
+    "storybook:ui": "pnpm --filter @real-demo/ui storybook",
+    "build-storybook:ui": "pnpm --filter @real-demo/ui build-storybook",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "format": "prettier --write .",
+    "knip": "knip",
+    "check": "pnpm lint && pnpm knip && pnpm typecheck && pnpm test && pnpm build",
+    "clean": "turbo clean && rm -rf node_modules apps/*/dist apps/*/.turbo apps/server/openapi packages/*/dist packages/*/.turbo packages/ui/storybook-static",
+    "docker-build": "docker build -t real-demo .",
+    "docker-run": "docker run --rm -p 13000:13000 --add-host=host.docker.internal:host-gateway --env NODE_ENV=production --env PORT=13000 --env APP_BASE_PATH=/ --env APP_RUNTIME_API_BASE_URL= --env DATABASE_URL=mysql://app:app@host.docker.internal:13306/real_demo --env REDIS_URL=redis://host.docker.internal:16379 --env CORS_ORIGIN=http://localhost:13000 --env LOG_LEVEL=info --env SWAGGER_ENABLED=true real-demo",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,json,md,css}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,mjs,cjs}": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-boundaries": "^6.0.2",
+    "globals": "^17.0.0",
+    "husky": "^9.1.7",
+    "knip": "^5.62.0",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2",
+    "tsup": "^8.5.0",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2",
+    "vitest": "^3.2.4"
+  }
+}

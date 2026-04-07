@@ -1,0 +1,46 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "@real-demo/server#openapi": {
+      "dependsOn": ["^build"],
+      "outputs": ["openapi/openapi.json"]
+    },
+    "@real-demo/sdk#generate-sdk": {
+      "dependsOn": ["@real-demo/server#openapi"],
+      "outputs": ["src/generated/**"]
+    },
+    "@real-demo/sdk#build": {
+      "dependsOn": ["generate-sdk", "^build"],
+      "outputs": ["dist/**"]
+    },
+    "@real-demo/web#build": {
+      "dependsOn": ["@real-demo/sdk#generate-sdk", "^build"],
+      "outputs": ["dist/**"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "coverage/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "generate-sdk": {
+      "outputs": ["src/generated/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "openapi": {
+      "outputs": ["openapi/openapi.json"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    }
+  }
+}

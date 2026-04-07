@@ -14,7 +14,7 @@ AIに**本番グレードのフルスタック TypeScript Monorepo**を一発で
 - **API コントラクト** — Zod 統一スキーマ → OpenAPI → Orval 自動生成型付き SDK
 - **サンプルビジネスモジュール** — User Management 完全フロー（フロントエンドページ → SDK → Controller → Use Case → Repository → MySQL/Redis）
 - **エンジニアリングツール** — ESLint + Prettier + Husky + commitlint + Knip + Vitest + Makefile + Docker + CI
-- **ドキュメント** — 多言語 README、アーキテクチャ説明、規約ドキュメント、CLAUDE.md / AGENTS.md
+- **ドキュメント** — 英語 + 対応言語の README ペア、アーキテクチャ説明、規約ドキュメント、CLAUDE.md / AGENTS.md
 
 ## 使い方
 

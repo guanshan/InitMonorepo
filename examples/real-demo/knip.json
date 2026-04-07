@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreDependencies": [
+    "pino-pretty",
+    "source-map-support",
+    "ts-loader",
+    "ts-node",
+    "tsconfig-paths"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreFiles": [
+    "packages/sdk/orval.config.ts"
+  ],
+  "ignoreUnresolved": [
+    "vite/client"
+  ]
+}

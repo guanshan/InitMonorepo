@@ -12,6 +12,7 @@
 - 「完璧に見せる」ために、実行不可能で検証不可能な、境界のないボイラープレートコードを大量に生成しないでください。
 - コンテキストウィンドウまたはトークンが不足する場合は、`Must` の完全な納品を優先し、次に `Should`、最後に `Nice-to-have` を処理してください。
 - `Should` または `Nice-to-have` の項目をスキップした場合、完了したふりをせず、何が延期されたかを明示してください。
+- ソースコード、識別子、コメント、設定キー名、環境変数名、fixture、seed データは英語で統一してください。ユーザー向け文言とローカライズされたドキュメントの初期納品言語ポリシーは、このプロンプト variant に従います。日本語プロンプトでは `日本語 + 英語` を納品してください。
 
 ## 2. 納品優先度
 
@@ -148,7 +149,7 @@
 ├── CLAUDE.md
 ├── AGENTS.md -> CLAUDE.md
 ├── README.md
-├── README.zh-CN.md
+├── README.ja.md
 ├── Makefile
 ├── Dockerfile
 ├── docker-compose.yml
@@ -301,8 +302,9 @@ apps/web/src
 - ダーク / ライトテーマ
 - テーマの永続化
 - システムテーマをデフォルト動作として
-- 中国語 / 英語
+- 日本語 / 英語
 - すべてのユーザーに表示されるテキストは i18n を経由する必要がある
+- 初期納品では `ja` と `en` の両ロケールを含めること
 - すべてのデザイン値はトークンを使用する必要がある
 - トークンは少なくとも `color`、`spacing`、`radius`、`shadow`、`typography`、`z-index` をカバー
 - 色名はセマンティックでなければならない（例：`--color-bg-default`、`--color-text-primary`）
@@ -619,10 +621,10 @@ apps/web/src
 - `make build`
 - `make check`
 - `make generate-sdk`
-- `make db:migrate`
-- `make db:seed`
-- `make db:reset`
-- `make db:studio`
+- `make db-migrate`
+- `make db-seed`
+- `make db-reset`
+- `make db-studio`
 - `make clean`
 - `make docker-build`
 - `make docker-run`
@@ -634,7 +636,7 @@ apps/web/src
 - `make dev` は `turbo dev`、`concurrently` または同等の方法でフロントエンドとバックエンドを同時起動
 - `make dev` は実行前に `mysql` と `redis` が利用可能であることを確認する必要がある；`docker compose up -d mysql redis` を自動実行するか、不足時に明確なプロンプトを表示
 - `make check` は少なくとも `lint`、`knip`、`typecheck`、`test`、`build` をチェーン
-- 開発段階で Prisma Studio を起動するための `make db:studio` を提供
+- 開発段階で Prisma Studio を起動するための `make db-studio` を提供
 
 ### 14.2 Turbo 設定
 
@@ -689,7 +691,7 @@ apps/web/src
 少なくとも以下を生成：
 
 - `README.md`（英語）
-- `README.zh-CN.md`（中国語）
+- `README.ja.md`（日本語）
 - `docs/frontend-architecture.md`
 - `docs/backend-architecture.md`
 - `docs/api-guidelines.md`
@@ -741,7 +743,7 @@ apps/web/src
 - `.nvmrc`
 - `.node-version`
 - `README.md`
-- `README.zh-CN.md`
+- `README.ja.md`
 - 完全なサンプルビジネスチェーン
 
 ## 18. 受け入れと検証

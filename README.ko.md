@@ -14,7 +14,7 @@ AI가 **프로덕션 수준의 풀스택 TypeScript Monorepo**를 한 번에 초
 - **API 계약** — Zod 통합 스키마 → OpenAPI → Orval 자동 생성 타입 SDK
 - **예제 비즈니스 모듈** — User Management 전체 흐름 (프론트엔드 페이지 → SDK → Controller → Use Case → Repository → MySQL/Redis)
 - **엔지니어링 도구** — ESLint + Prettier + Husky + commitlint + Knip + Vitest + Makefile + Docker + CI
-- **문서** — 다국어 README, 아키텍처 설명, 규약 문서, CLAUDE.md / AGENTS.md
+- **문서** — 영어 + 해당 언어 README 조합, 아키텍처 설명, 규약 문서, CLAUDE.md / AGENTS.md
 
 ## 사용 방법
 

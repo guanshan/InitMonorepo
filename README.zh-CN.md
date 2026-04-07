@@ -14,7 +14,7 @@
 - **API 契约** — Zod 统一 schema → OpenAPI → Orval 自动生成 typed SDK
 - **示例业务** — User Management 完整链路（前端页面 → SDK → Controller → Use Case → Repository → MySQL/Redis）
 - **工程化** — ESLint + Prettier + Husky + commitlint + Knip + Vitest + Makefile + Docker + CI
-- **文档** — 中英文 README、架构说明、规范文档、CLAUDE.md / AGENTS.md
+- **文档** — 英文 + 对应语言 README、架构说明、规范文档、CLAUDE.md / AGENTS.md
 
 ## 如何使用
 

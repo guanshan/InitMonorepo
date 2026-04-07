@@ -1,0 +1,17 @@
+{
+  "extends": "../../packages/config/tsconfig.node.json",
+  "compilerOptions": {
+    "isolatedModules": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "incremental": true,
+    "removeComments": true,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    {
+      "path": "../../packages/shared"
+    }
+  ]
+}

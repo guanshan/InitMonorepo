@@ -1,0 +1,16 @@
+{
+  "name": "@real-demo/config",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "tsconfig.base.json",
+    "tsconfig.node.json",
+    "tsconfig.web.json"
+  ],
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
+    "./tsconfig.web.json": "./tsconfig.web.json"
+  }
+}

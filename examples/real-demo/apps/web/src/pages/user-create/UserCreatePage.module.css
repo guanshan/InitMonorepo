@@ -1,0 +1,58 @@
+.wrapper {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 40rem;
+}
+
+.header {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.caption {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-2);
+}
+
+.description {
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 50ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+.backLink {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: var(--border-width-default) solid var(--color-border-soft);
+  background: var(--color-surface-raised);
+  white-space: nowrap;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.backLink::before {
+  content: "\2190";
+}
+
+.backLink:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
+}

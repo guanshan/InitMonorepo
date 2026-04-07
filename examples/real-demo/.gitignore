@@ -1,0 +1,10 @@
+node_modules
+.turbo
+dist
+coverage
+*.tsbuildinfo
+.env
+.env.local
+apps/server/generated
+apps/server/openapi
+packages/ui/storybook-static

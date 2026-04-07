@@ -12,6 +12,7 @@ Please initialize a runnable, maintainable, extensible, and production-realistic
 - Do not generate a large amount of non-runnable, unverifiable, boundary-less boilerplate code just to "look complete."
 - If the context window or tokens are insufficient, prioritize fully delivering `Must`, then handle `Should`, and finally `Nice-to-have`.
 - If you skip any `Should` or `Nice-to-have` items, do not pretend they are done; explicitly state what has been deferred.
+- Use English for source code, identifiers, comments, config keys, environment variable names, fixtures, and seed data. The initial delivery language policy for user-facing copy and localized docs depends on the prompt variant: this English prompt stays English-first, while localized prompt variants should deliver `English + that locale`.
 
 ## 2. Delivery Priorities
 
@@ -148,7 +149,6 @@ Must include at least the following structure:
 ├── CLAUDE.md
 ├── AGENTS.md -> CLAUDE.md
 ├── README.md
-├── README.zh-CN.md
 ├── Makefile
 ├── Dockerfile
 ├── docker-compose.yml
@@ -287,7 +287,7 @@ Must provide at least:
 - Home page
 - 404 page
 - Theme toggle component
-- Language switcher component
+- Language switcher component when the initial delivery includes more than one locale
 - Global error boundary
 - `Loading / Empty / Error` tri-state components
 - User list page
@@ -301,8 +301,8 @@ Must support:
 - Dark / Light theme
 - Theme persistence
 - System theme as default behavior
-- Chinese / English
-- All user-visible text must go through i18n
+- English user-visible text must go through i18n
+- The initial delivery may keep only an `en` locale, but the i18n structure must be ready for later locale expansion
 - All design values must use tokens
 - Tokens must cover at least `color`, `spacing`, `radius`, `shadow`, `typography`, `z-index`
 - Color names must be semantic, e.g., `--color-bg-default`, `--color-text-primary`
@@ -619,10 +619,10 @@ Must include at least:
 - `make build`
 - `make check`
 - `make generate-sdk`
-- `make db:migrate`
-- `make db:seed`
-- `make db:reset`
-- `make db:studio`
+- `make db-migrate`
+- `make db-seed`
+- `make db-reset`
+- `make db-studio`
 - `make clean`
 - `make docker-build`
 - `make docker-run`
@@ -634,7 +634,7 @@ Requirements:
 - `make dev` concurrently starts frontend and backend via `turbo dev`, `concurrently`, or equivalent
 - `make dev` must ensure `mysql` and `redis` are available before running; can automatically execute `docker compose up -d mysql redis`, or give a clear prompt when missing
 - `make check` chains at least `lint`, `knip`, `typecheck`, `test`, `build`
-- Provide `make db:studio` for launching Prisma Studio during development
+- Provide `make db-studio` for launching Prisma Studio during development
 
 ### 14.2 Turbo Configuration
 
@@ -689,7 +689,6 @@ As `Should`, must include at least:
 Generate at least:
 
 - `README.md` (English)
-- `README.zh-CN.md` (Chinese)
 - `docs/frontend-architecture.md`
 - `docs/backend-architecture.md`
 - `docs/api-guidelines.md`
@@ -741,7 +740,6 @@ Output at least:
 - `.nvmrc`
 - `.node-version`
 - `README.md`
-- `README.zh-CN.md`
 - Complete example business chain
 
 ## 18. Acceptance & Verification

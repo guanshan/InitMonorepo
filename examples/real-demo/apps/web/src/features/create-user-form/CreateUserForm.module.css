@@ -1,0 +1,115 @@
+.form {
+  background: var(--color-surface-raised);
+  border: var(--border-width-default) solid var(--color-border-soft);
+  border-radius: var(--radius-xl);
+  display: grid;
+  gap: var(--space-5);
+  max-width: var(--size-form-max);
+  padding: var(--space-6) var(--space-7);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1-5);
+}
+
+.field span {
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.field input,
+.field select {
+  appearance: none;
+  background: var(--color-bg-base);
+  border: var(--border-width-default) solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2-5) var(--space-3);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--color-text-muted);
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.field input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%2364748b' d='M1.4 0L6 4.6 10.6 0 12 1.4l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  padding-right: var(--space-10);
+  cursor: pointer;
+}
+
+.field small,
+.error {
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.error {
+  background: var(--color-danger-soft);
+  border: var(--border-width-default) solid
+    color-mix(in srgb, var(--color-danger) 15%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.submit {
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: var(--space-3) var(--space-6);
+  margin-top: var(--space-2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  box-shadow: 0 4px 12px var(--color-accent-glow),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.submit:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-glow);
+}

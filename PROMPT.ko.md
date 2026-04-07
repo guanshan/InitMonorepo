@@ -12,6 +12,7 @@
 - "완전해 보이기" 위해 실행 불가능하고 검증 불가능한, 경계 없는 보일러플레이트 코드를 대량으로 생성하지 마세요.
 - 컨텍스트 윈도우나 토큰이 부족한 경우, `Must`를 완전히 전달하는 것을 최우선으로 하고, 그 다음 `Should`, 마지막으로 `Nice-to-have`를 처리하세요.
 - `Should` 또는 `Nice-to-have` 항목을 건너뛴 경우, 완료된 것처럼 위장하지 말고 어떤 항목이 연기되었는지 명시하세요.
+- 소스 코드, 식별자, 주석, 설정 키 이름, 환경 변수 이름, fixture, seed 데이터는 영어로 통일하세요. 사용자 대상 문구와 현지화 문서의 초기 전달 언어 정책은 이 프롬프트 variant를 따릅니다. 한국어 프롬프트에서는 `한국어 + 영어`를 전달하세요.
 
 ## 2. 전달 우선순위
 
@@ -148,7 +149,7 @@
 ├── CLAUDE.md
 ├── AGENTS.md -> CLAUDE.md
 ├── README.md
-├── README.zh-CN.md
+├── README.ko.md
 ├── Makefile
 ├── Dockerfile
 ├── docker-compose.yml
@@ -301,8 +302,9 @@ apps/web/src
 - 다크 / 라이트 테마
 - 테마 영속화
 - 시스템 테마를 기본 동작으로
-- 중국어 / 영어
+- 한국어 / 영어
 - 모든 사용자에게 보이는 텍스트는 i18n을 거쳐야 함
+- 초기 전달물에는 `ko` 와 `en` 로케일을 모두 포함해야 함
 - 모든 디자인 값은 토큰을 사용해야 함
 - 토큰은 최소한 `color`, `spacing`, `radius`, `shadow`, `typography`, `z-index`를 커버
 - 색상 이름은 시맨틱이어야 함 (예: `--color-bg-default`, `--color-text-primary`)
@@ -619,10 +621,10 @@ apps/web/src
 - `make build`
 - `make check`
 - `make generate-sdk`
-- `make db:migrate`
-- `make db:seed`
-- `make db:reset`
-- `make db:studio`
+- `make db-migrate`
+- `make db-seed`
+- `make db-reset`
+- `make db-studio`
 - `make clean`
 - `make docker-build`
 - `make docker-run`
@@ -634,7 +636,7 @@ apps/web/src
 - `make dev`는 `turbo dev`, `concurrently` 또는 동등한 방법으로 프론트엔드와 백엔드를 동시 시작
 - `make dev`는 실행 전에 `mysql`과 `redis`가 사용 가능한지 확인해야 함; `docker compose up -d mysql redis`를 자동 실행하거나, 부재 시 명확한 프롬프트 표시
 - `make check`는 최소한 `lint`, `knip`, `typecheck`, `test`, `build`를 체인
-- 개발 단계에서 Prisma Studio를 실행하기 위한 `make db:studio` 제공
+- 개발 단계에서 Prisma Studio를 실행하기 위한 `make db-studio` 제공
 
 ### 14.2 Turbo 설정
 
@@ -689,7 +691,7 @@ apps/web/src
 최소한 다음을 생성:
 
 - `README.md` (영어)
-- `README.zh-CN.md` (중국어)
+- `README.ko.md` (한국어)
 - `docs/frontend-architecture.md`
 - `docs/backend-architecture.md`
 - `docs/api-guidelines.md`
@@ -741,7 +743,7 @@ apps/web/src
 - `.nvmrc`
 - `.node-version`
 - `README.md`
-- `README.zh-CN.md`
+- `README.ko.md`
 - 완전한 예제 비즈니스 체인
 
 ## 18. 인수 및 검증

@@ -1,0 +1,183 @@
+.wrapper {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.header {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+}
+
+.header h1 {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--space-1);
+}
+
+.header p {
+  color: var(--color-text-muted);
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(var(--size-card-min), 1fr));
+}
+
+.card {
+  background: var(--color-surface-raised);
+  border: var(--border-width-default) solid var(--color-border-soft);
+  border-radius: var(--radius-xl);
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  position: relative;
+  transition:
+    box-shadow var(--transition-base),
+    border-color var(--transition-base),
+    transform var(--transition-base);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-6);
+  right: var(--space-6);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent),
+    var(--color-accent-strong)
+  );
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: transparent;
+  transform: translateY(var(--motion-lift-md));
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-avatar-sm);
+  height: var(--size-avatar-sm);
+  border-radius: var(--radius-circle);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-accent-strong)
+  );
+  color: white;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.cardHeader {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.cardHeader h2 {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardHeader span {
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-pill);
+  color: var(--color-accent-strong);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-tag);
+  padding: 2px var(--space-2);
+  white-space: nowrap;
+  justify-self: start;
+}
+
+.email {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.createLink {
+  background: var(--color-accent);
+  border-radius: var(--radius-lg);
+  color: white;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2-5) var(--space-5);
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.createLink:hover {
+  background: var(--color-accent-hover);
+  box-shadow: 0 4px 12px var(--color-accent-glow),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.createLink:active {
+  transform: scale(0.98);
+}
+
+.detailLink {
+  color: var(--color-accent);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition:
+    color var(--transition-fast),
+    gap var(--transition-fast);
+}
+
+.detailLink::after {
+  content: "\2192";
+  font-size: 0.875rem;
+  transition: transform var(--transition-fast);
+}
+
+.detailLink:hover {
+  color: var(--color-accent-strong);
+}
+
+.detailLink:hover::after {
+  transform: translateX(var(--motion-shift-xs));
+}

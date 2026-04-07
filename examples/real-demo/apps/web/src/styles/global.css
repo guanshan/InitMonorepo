@@ -1,0 +1,114 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap");
+
+:root {
+  background: var(--color-bg-base);
+  background-image: radial-gradient(
+      ellipse 80% 60% at 40% 0%,
+      color-mix(in srgb, var(--color-accent) 5%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 95% 5%,
+      color-mix(in srgb, var(--color-success) 4%, transparent),
+      transparent
+    );
+  background-attachment: fixed;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: var(--size-layout-min);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-family: var(--font-family-heading);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: var(--line-height-tight);
+}
+
+h2 {
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-heading);
+}
+
+#root {
+  min-height: var(--size-viewport-height);
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+}
+
+/* --- Focus ring --- */
+:focus-visible {
+  outline: var(--outline-width-focus) solid var(--color-accent);
+  outline-offset: var(--offset-focus);
+}
+
+/* --- Smooth page transitions --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise-base));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeInUp var(--transition-slow) both;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: var(--size-scrollbar);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-soft);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* --- Smooth link transitions --- */
+a {
+  transition: color var(--transition-fast);
+}
