@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { CreateUserForm } from "../../features/create-user-form/CreateUserForm";
 import styles from "./UserCreatePage.module.css";

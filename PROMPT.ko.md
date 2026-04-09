@@ -22,7 +22,7 @@
 
 - Monorepo 기본 골격이 실행 가능
 - 프론트엔드와 백엔드 모두 로컬에서 개발, 빌드, lint, typecheck, 테스트 가능
-- 프론트엔드 React + Vite + BrowserRouter + base path 전략이 올바름
+- 프론트엔드 React Router Framework Mode + Vite + base path 전략이 올바름
 - 백엔드 NestJS + Prisma + MySQL + Redis 기본 체인이 실행 가능
 - 프론트엔드 FSD 경계가 명확
 - 백엔드 핵심 비즈니스 모듈이 DDD 레이어링 사용
@@ -69,8 +69,8 @@
 ### 3.2 프론트엔드
 
 - React
+- React Router v7 Framework Mode(이 프론트엔드/백엔드 분리 아키텍처에서는 기본적으로 SPA Mode)
 - Vite
-- React Router (BrowserRouter)
 - TanStack Query
 - Zustand
 - i18next
@@ -316,14 +316,14 @@ apps/web/src
 - 키보드로 탐색 가능
 - 다이얼로그는 포커스 관리 지원
 - 색상만으로 정보를 전달하지 않음
-- 페이지 수준 라우트 컴포넌트는 기본적으로 `React.lazy` + `Suspense`
+- React Router route module 레벨 코드 스플리팅을 우선하고 `HydrateFallback` 또는 동등한 로딩 UI를 제공
 
 ## 8. 라우팅 및 베이스 경로
 
 ### 8.1 라우팅 전략
 
-- BrowserRouter 사용
-- React Router `basename` 사용
+- React Router Framework Mode 사용
+- `react-router.config.ts`에서 React Router `basename` 구성
 - Vite `base` 사용
 - 프론트엔드는 루트 경로 `/`에 배포됨을 가정하지 않음
 
@@ -342,18 +342,14 @@ apps/web/src
 - `""`, `"/"`, `"//"` 등의 비정상 입력은 설정 레이어에서 통일적으로 정규화해야 함
 - React Router `basename`, Vite `base`, NestJS 정적 호스팅 경로, Swagger 경로는 모두 동일한 정규화 규칙을 따라야 함
 
-### 8.4 Vite `base`와 React Router `basename`의 경계
+### 8.4 Vite `base`와 React Router Framework `basename`의 경계
 
-두 가지 모드를 명확히 정의해야 하며, 혼합하지 않음. 기본은 "배포 후 변경 가능" 모드:
+기본은 "빌드 시 고정 base path" 모드:
 
-- 배포 후 변경 가능 모드 (기본):
-  - Vite `base`를 `./`로 설정
-  - React Router `basename`은 `window.__APP_CONFIG__.basePath` 또는 동등한 런타임 설정에서 읽음
-  - NestJS가 `index.html`을 반환할 때 런타임 설정 주입
-- 빌드 시 고정 모드 (폴백):
-  - Vite `base`와 React Router `basename` 모두 `VITE_BASE_PATH`에서 읽을 수 있음
-  - 이 모드에서는 배포 후 정적 자산 접두사를 동적으로 변경하면 안 됨
-  - 이 모드로 전환하는 방법을 문서화
+- `react-router.config.ts`의 React Router `basename`과 Vite `base`는 동일한 정규화된 `VITE_BASE_PATH`에서 읽어야 함
+- `VITE_BASE_PATH`가 없으면 둘 다 루트 `/`로 해석되어야 함
+- 라우터 basename과 정적 자산 접두사는 빌드 시 고정값이며 배포 후 동적으로 바꾸지 말 것
+- 배포 시점에 바뀔 수 있는 프론트엔드 설정이 필요하더라도 런타임 주입은 API origin, feature flag 같은 값에만 사용하고 base path나 자산 접두사에는 사용하지 말 것
 
 ### 8.5 배포 설정
 
@@ -362,8 +358,10 @@ apps/web/src
 - API 라우트와 SPA 라우트를 명확히 분리
 - 권장 API 접두사: `${APP_BASE_PATH}/api/v1`
 - Swagger UI 경로: `${APP_BASE_PATH}/api/docs`
-- 배포 후 변경될 수 있는 프론트엔드 설정에는 런타임 주입 메커니즘 제공 (예: `window.__APP_CONFIG__`)
-- 로컬 개발 시, Vite는 `server.proxy`를 설정하여 `/api` 또는 동등한 API 접두사를 백엔드 포트로 프록시하여 CORS 문제 회피
+- 배포 시점에 바뀔 수 있는 프론트엔드 설정에는 `window.__APP_CONFIG__` 같은 런타임 주입 메커니즘을 제공할 수 있지만, base path는 빌드 시 고정
+- 로컬 개발 시에는 명확하고 문서화 가능한 API 연결 전략을 제공해야 함
+- 기본적으로는 React Router dev server(내부적으로 Vite 사용)가 `server.proxy`를 설정하여 `/api` 또는 동등한 API 접두사를 백엔드 포트로 프록시해 CORS 복잡도를 줄이는 방식을 권장함
+- 의도적으로 프런트엔드와 백엔드를 분리된 포트로 직접 연결하는 경우에는 `VITE_API_BASE_URL` 같은 명시적 설정을 허용할 수 있지만, CORS, 환경 변수, SDK base URL 해석 전략은 일관되어야 함
 
 ## 9. 백엔드 요구사항
 
@@ -507,21 +505,22 @@ apps/web/src
 
 프론트엔드 빌드 시 변수:
 
+- `VITE_API_BASE_URL`(선택 사항; 주로 로컬 개발 또는 명시적인 크로스 오리진 API 대상용)
 - `VITE_APP_NAME`
 - `VITE_DEFAULT_LOCALE`
 - `VITE_DEFAULT_THEME`
-- `VITE_BASE_PATH` (빌드 시 고정 모드 전용)
+- `VITE_BASE_PATH`
 
 프론트엔드 런타임 주입 변수:
 
 - `APP_RUNTIME_API_BASE_URL`
-- `APP_RUNTIME_BASE_PATH`
 
 설명:
 
-- 이 두 값은 프론트엔드 빌드 시 환경 변수가 아님
-- NestJS가 `index.html`을 반환할 때 `window.__APP_CONFIG__`에 주입
-- 프론트엔드 `.env` 파일에 작성할 필요 없음
+- `VITE_API_BASE_URL`은 프론트엔드 빌드 시 폴백 설정이며, 선택한 로컬 개발 또는 크로스 오리진 API 전략과 일치해야 함
+- `APP_RUNTIME_API_BASE_URL`은 프론트엔드 빌드 시 환경 변수가 아님
+- `APP_RUNTIME_API_BASE_URL`은 NestJS가 `index.html`을 반환할 때 `window.__APP_CONFIG__`에 주입함
+- `APP_RUNTIME_API_BASE_URL`을 프론트엔드 `.env` 파일에 작성할 필요는 없음
 - 대응하는 서버 측 설정 소스는 백엔드 설정 레이어에서 집중적으로 선언 및 매핑
 
 백엔드 변수:

@@ -5,7 +5,7 @@ This directory contains an English-only reference implementation generated to ma
 ## Stack
 
 - Monorepo: `pnpm` workspace + Turborepo + TypeScript project references
-- Frontend: React + Vite + BrowserRouter + TanStack Query + Zustand + i18next
+- Frontend: React Router v7 Framework Mode (SPA Mode) + Vite + TanStack Query + Zustand + i18next
 - Backend: NestJS + Prisma + MySQL + Redis + Pino
 - Shared contract: Zod schemas in `packages/shared`
 - SDK: OpenAPI export from the server and Orval code generation in `packages/sdk`
@@ -55,17 +55,21 @@ If `docker compose` is unavailable, the helper scripts in `scripts/` fall back t
 
 ## Runtime Config
 
-- The frontend keeps Vite `base` on `./` by default so the same build can be moved after deployment.
-- NestJS serves the built frontend and injects `window.__APP_CONFIG__` at runtime for `APP_RUNTIME_BASE_PATH` and `APP_RUNTIME_API_BASE_URL`.
-- In same-origin deployments, `APP_RUNTIME_API_BASE_URL` defaults to the app base path so generated SDK requests resolve to `${APP_BASE_PATH}/api/*`.
-- For build-time fixed deployments, set `VITE_BASE_PATH` during the web build so Vite asset paths and the router fallback base stay aligned.
-- For local Vite development, `VITE_API_BASE_URL=http://localhost:13000` remains the fallback and `/api` is proxied through Vite.
+- The frontend uses React Router framework mode in SPA mode and emits static assets under `apps/web/dist/client`.
+- NestJS serves the built frontend and injects `window.__APP_CONFIG__` at runtime for `APP_RUNTIME_API_BASE_URL`.
+- In same-origin deployments, `APP_RUNTIME_API_BASE_URL` defaults to the app base path so generated SDK requests resolve to `${APP_BASE_PATH}/api/v1/*`.
+- Set `VITE_BASE_PATH` during the web build to the same normalized path as `APP_BASE_PATH` for any non-root deployment.
+- Router basename and asset prefixes are build-time fixed; do not try to rewrite them after deployment.
+- In non-production environments, if stale built frontend assets target a different base path, the server logs a warning and skips frontend hosting until the web app is rebuilt. Production fails fast when the built frontend is missing or targets a different base path.
+- `TRUST_PROXY` defaults to `false` (no proxy trusted). Set it explicitly to match your reverse-proxy topology (e.g. `loopback`, `loopback,linklocal,uniquelocal`, or a hop count) so that rate limiting and request IP resolution work correctly behind a proxy.
+- For local development, leave `VITE_API_BASE_URL` empty by default so browser requests stay same-origin and `/api` flows through the React Router dev server proxy.
+- Set `VITE_API_BASE_URL` only when you intentionally want cross-origin API access during development or in special deployments.
 
 ## Key Flows
 
-- `GET /api/users` reads from MySQL and stores a cached list snapshot in Redis
-- `GET /api/users/:id` resolves a single user record and reuses an entity cache snapshot on repeated requests
-- `POST /api/users` validates input with Zod, writes through Prisma, invalidates the list cache, and refreshes the detail cache
+- `GET /api/v1/users` reads a paginated user list from MySQL and stores versioned page snapshots in Redis
+- `GET /api/v1/users/:id` resolves a single user record and reuses an entity cache snapshot on repeated requests
+- `POST /api/v1/users` validates input with Zod, writes through Prisma, bumps the list-cache version, and refreshes the detail cache
 - The frontend consumes the generated SDK and wraps requests with TanStack Query hooks
 - TanStack Query routes request failures through one shared error pipeline for redirects and toast feedback
 - Frontend tests mock network calls with MSW instead of hand-rolled fetch stubs
@@ -74,11 +78,12 @@ If `docker compose` is unavailable, the helper scripts in `scripts/` fall back t
 ## Docker
 
 1. Run `make infra-up`
-2. Run `make docker-build`
-3. Run `make docker-run`
-4. Open `http://localhost:13000`
+2. Build the image with `make docker-build`
+3. For non-root deployments, replace the previous step with `VITE_BASE_PATH=/real-demo make docker-build`
+4. Run `make docker-run`
+5. Open `http://localhost:13000`
 
-The Docker image now contains both the NestJS server runtime and the built Vite frontend. `make docker-run` connects back to the locally started MySQL and Redis containers through `host.docker.internal`.
+The Docker image now contains both the NestJS server runtime and the built React Router SPA frontend. `make docker-run` connects back to the locally started MySQL and Redis containers through `host.docker.internal`. The Docker build forwards an optional `VITE_BASE_PATH` build argument, and `make docker-run` forwards optional `APP_BASE_PATH`, `APP_RUNTIME_API_BASE_URL`, and `TRUST_PROXY` environment overrides, so child-path deployments must set matching build-time and runtime paths.
 
 ## Verification
 

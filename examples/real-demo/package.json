@@ -27,9 +27,9 @@
     "format": "prettier --write .",
     "knip": "knip",
     "check": "pnpm lint && pnpm knip && pnpm typecheck && pnpm test && pnpm build",
-    "clean": "turbo clean && rm -rf node_modules apps/*/dist apps/*/.turbo apps/server/openapi packages/*/dist packages/*/.turbo packages/ui/storybook-static",
-    "docker-build": "docker build -t real-demo .",
-    "docker-run": "docker run --rm -p 13000:13000 --add-host=host.docker.internal:host-gateway --env NODE_ENV=production --env PORT=13000 --env APP_BASE_PATH=/ --env APP_RUNTIME_API_BASE_URL= --env DATABASE_URL=mysql://app:app@host.docker.internal:13306/real_demo --env REDIS_URL=redis://host.docker.internal:16379 --env CORS_ORIGIN=http://localhost:13000 --env LOG_LEVEL=info --env SWAGGER_ENABLED=true real-demo",
+    "clean": "turbo clean && rm -rf node_modules apps/*/dist apps/*/.react-router apps/*/.turbo apps/server/openapi packages/*/dist packages/*/.turbo packages/ui/storybook-static",
+    "docker-build": "docker build --build-arg VITE_BASE_PATH -t real-demo .",
+    "docker-run": "docker run --rm -p 13000:13000 --add-host=host.docker.internal:host-gateway --env NODE_ENV=production --env PORT=13000 --env APP_BASE_PATH=${APP_BASE_PATH:-/} --env APP_RUNTIME_API_BASE_URL=${APP_RUNTIME_API_BASE_URL:-} --env DATABASE_URL=mysql://app:app@host.docker.internal:13306/real_demo --env REDIS_URL=redis://host.docker.internal:16379 --env CORS_ORIGIN=http://localhost:13000 --env LOG_LEVEL=info --env SWAGGER_ENABLED=true --env TRUST_PROXY=${TRUST_PROXY:-false} real-demo",
     "prepare": "husky"
   },
   "lint-staged": {

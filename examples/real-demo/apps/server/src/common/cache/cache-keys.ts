@@ -2,15 +2,19 @@ const encodeCacheSegment = (value: string) => encodeURIComponent(value.trim());
 
 export const cacheKeys = {
   auth: {
-    sessionById: (sessionId: string) => `auth:session:${encodeCacheSegment(sessionId)}`,
+    sessionById: (sessionId: string) =>
+      `auth:session:${encodeCacheSegment(sessionId)}`,
   },
   entity: {
     userById: (userId: string) => `entity:user:${encodeCacheSegment(userId)}`,
   },
   query: {
-    usersList: () => "query:users:list",
+    usersListPage: (version: number, page: number, pageSize: number) =>
+      `query:users:list:v${version}:page:${page}:page-size:${pageSize}`,
+    usersListVersion: () => "query:users:list:version",
   },
   rateLimit: {
-    byIp: (ipAddress: string) => `rate-limit:ip:${encodeCacheSegment(ipAddress)}`,
+    byIp: (ipAddress: string) =>
+      `rate-limit:ip:${encodeCacheSegment(ipAddress)}`,
   },
 } as const;

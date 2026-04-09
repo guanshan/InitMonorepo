@@ -9,7 +9,7 @@ A battle-tested LLM prompt that lets AI initialize a **production-grade full-sta
 Feed [PROMPT.md](PROMPT.md) to an LLM and get a fully runnable project including:
 
 - **Monorepo Skeleton** — pnpm workspace + Turborepo + TypeScript Project References
-- **Frontend** — React + Vite + BrowserRouter + FSD Architecture + TanStack Query + Zustand + i18n + Light/Dark Theme
+- **Frontend** — React Router v7 Framework Mode (SPA Mode) + Vite + FSD Architecture + TanStack Query + Zustand + i18n + Light/Dark Theme
 - **Backend** — NestJS + Prisma + MySQL + Redis + DDD Layering + Pino Structured Logging
 - **API Contract** — Zod unified schema → OpenAPI → Orval auto-generated typed SDK
 - **Example Business Module** — Full User Management flow (Frontend Page → SDK → Controller → Use Case → Repository → MySQL/Redis)
@@ -28,7 +28,7 @@ Feed [PROMPT.md](PROMPT.md) to an LLM and get a fully runnable project including
 - **Layered Priorities** (Must / Should / Nice-to-have) — Prevents half-baked, non-runnable output when the model runs low on tokens
 - **Acceptance Criteria** — Requires the model to actually verify the command chain, not just generate files and declare success
 - **Boundary Constraints** — Enforces architectural boundaries via engineering rules (ESLint boundaries, package exports, path aliases)
-- **Base Path Normalization** — Supports non-root-path deployment with both runtime injection and build-time fixed modes
+- **Base Path Normalization** — Supports non-root-path deployment with build-time fixed basename and asset prefixes, while reserving runtime injection for values such as API origin
 - **State Boundaries** — TanStack Query for server state, Zustand only for UI global state
 - **Scoped DDD** — Core business modules follow DDD; infrastructure modules avoid over-abstraction
 

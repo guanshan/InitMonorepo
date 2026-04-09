@@ -8,6 +8,7 @@ export default [
     ignores: [
       "**/dist/**",
       "**/coverage/**",
+      "**/.react-router/**",
       "**/node_modules/**",
       "**/.turbo/**",
       "packages/sdk/src/generated/**",

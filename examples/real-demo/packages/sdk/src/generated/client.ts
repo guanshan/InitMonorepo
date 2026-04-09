@@ -9,6 +9,7 @@ import type {
   ApiFailureDto,
   CreateUserDto,
   CreateUserResponseDto,
+  ListUsersParams,
   UserDetailResponseDto,
   UserListResponseDto
 } from './model';
@@ -29,17 +30,24 @@ export type listUsersResponseSuccess = (listUsersResponse200) & {
 
 export type listUsersResponse = (listUsersResponseSuccess)
 
-export const getListUsersUrl = () => {
+export const getListUsersUrl = (params?: ListUsersParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/users`
+  return stringifiedParams.length > 0 ? `/api/v1/users?${stringifiedParams}` : `/api/v1/users`
 }
 
-export const listUsers = async ( options?: RequestInit): Promise<listUsersResponse> => {
+export const listUsers = async (params?: ListUsersParams, options?: RequestInit): Promise<listUsersResponse> => {
 
-  return customFetcher<listUsersResponse>(getListUsersUrl(),
+  return customFetcher<listUsersResponse>(getListUsersUrl(params),
   {
     ...options,
     method: 'GET'
@@ -82,7 +90,7 @@ export const getCreateUserUrl = () => {
 
 
 
-  return `/api/users`
+  return `/api/v1/users`
 }
 
 export const createUser = async (createUserDto: CreateUserDto, options?: RequestInit): Promise<createUserResponse> => {
@@ -126,7 +134,7 @@ export const getGetUserByIdUrl = (id: string,) => {
 
 
 
-  return `/api/users/${id}`
+  return `/api/v1/users/${id}`
 }
 
 export const getUserById = async (id: string, options?: RequestInit): Promise<getUserByIdResponse> => {

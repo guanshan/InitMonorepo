@@ -2,15 +2,15 @@ import type { PropsWithChildren } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { environment } from "../../shared/config/env";
 import { useCreateUser, useUserById, useUsers } from "./api";
 
 const sdkReactMocks = vi.hoisted(() => ({
-  getGetUserByIdQueryKey: vi.fn((id: string) => [`/api/users/${id}`]),
-  getListUsersQueryKey: vi.fn(() => ["/api/users"]),
+  getGetUserByIdQueryKey: vi.fn((id: string) => [`/api/v1/users/${id}`]),
+  getListUsersQueryKey: vi.fn(() => ["/api/v1/users"]),
   useCreateUserGenerated: vi.fn(),
   useGetUserByIdGenerated: vi.fn(),
   useListUsersGenerated: vi.fn(),
@@ -72,9 +72,13 @@ describe("user api wrappers", () => {
   });
 
   it("passes runtime apiBaseUrl to the list users query hook", () => {
-    renderHook(() => useUsers());
+    renderHook(() => useUsers({ page: 2, pageSize: 20 }));
 
     expect(sdkReactMocks.useListUsersGenerated).toHaveBeenCalledWith(
+      {
+        page: 2,
+        pageSize: 20,
+      },
       expect.objectContaining({
         request: {
           baseUrl: environment.apiBaseUrl,

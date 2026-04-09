@@ -9,7 +9,7 @@
 将 [PROMPT.zh-CN.md](PROMPT.zh-CN.md) 投喂给大模型后，预期得到一个完整可运行的工程，包括：
 
 - **Monorepo 骨架** — pnpm workspace + Turborepo + TypeScript Project References
-- **前端** — React + Vite + BrowserRouter + FSD 架构 + TanStack Query + Zustand + i18n + 深浅主题
+- **前端** — React Router v7 Framework Mode（SPA Mode）+ Vite + FSD 架构 + TanStack Query + Zustand + i18n + 深浅主题
 - **后端** — NestJS + Prisma + MySQL + Redis + DDD 分层 + Pino 结构化日志
 - **API 契约** — Zod 统一 schema → OpenAPI → Orval 自动生成 typed SDK
 - **示例业务** — User Management 完整链路（前端页面 → SDK → Controller → Use Case → Repository → MySQL/Redis）
@@ -28,7 +28,7 @@
 - **分层优先级**（Must / Should / Nice-to-have）— 防止模型 token 不足时产出不可运行的半成品
 - **验收要求** — 要求模型实际验证命令链路，而不是只生成文件就宣称完成
 - **边界约束** — 通过工程规则（ESLint boundaries、package exports、路径别名）落地架构边界
-- **Base Path 归一化** — 支持非根路径部署，运行时注入与构建时固定两种模式
+- **Base Path 归一化** — 支持非根路径部署，base path 与静态资源前缀采用构建时固定，运行时注入仅保留给 API origin 等值
 - **状态边界** — TanStack Query 管服务端状态，Zustand 仅管 UI 全局状态
 - **DDD 范围收紧** — 核心业务模块走 DDD，基础设施模块不过度抽象
 

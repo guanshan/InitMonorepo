@@ -9,6 +9,11 @@ interface CachedUserSnapshot {
   updatedAt: string;
 }
 
+interface CachedUsersPageSnapshot {
+  totalItems: number;
+  users: CachedUserSnapshot[];
+}
+
 const deserializeUser = (snapshot: CachedUserSnapshot): User => ({
   createdAt: new Date(snapshot.createdAt),
   email: snapshot.email,
@@ -27,13 +32,31 @@ const serializeUser = (user: User): CachedUserSnapshot => ({
   updatedAt: user.updatedAt.toISOString(),
 });
 
-export const deserializeCachedUser = (
-  snapshot: CachedUserSnapshot | null,
-) => (snapshot ? deserializeUser(snapshot) : null);
+export const deserializeCachedUser = (snapshot: CachedUserSnapshot | null) =>
+  snapshot ? deserializeUser(snapshot) : null;
 
 export const deserializeCachedUsers = (snapshots: CachedUserSnapshot[]) =>
   snapshots.map(deserializeUser);
 
+export const deserializeCachedUsersPage = (
+  snapshot: CachedUsersPageSnapshot | null,
+) =>
+  snapshot
+    ? {
+        totalItems: snapshot.totalItems,
+        users: deserializeCachedUsers(snapshot.users),
+      }
+    : null;
+
 export const serializeUserForCache = serializeUser;
 
-export const serializeUsersForCache = (users: User[]) => users.map(serializeUser);
+export const serializeUsersForCache = (users: User[]) =>
+  users.map(serializeUser);
+
+export const serializeUsersPageForCache = (
+  users: User[],
+  totalItems: number,
+): CachedUsersPageSnapshot => ({
+  totalItems,
+  users: serializeUsersForCache(users),
+});

@@ -43,6 +43,9 @@ RUN pnpm turbo build --filter=@real-demo/server
 # =============================================================================
 FROM base AS build-web
 
+ARG VITE_BASE_PATH
+ENV VITE_BASE_PATH="${VITE_BASE_PATH}"
+
 COPY --from=prune-web /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 

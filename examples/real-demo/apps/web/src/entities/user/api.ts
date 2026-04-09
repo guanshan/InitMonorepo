@@ -7,13 +7,15 @@ import {
 } from "@real-demo/sdk/react";
 import {
   CreateUserResponseSchema,
+  ListUsersQuerySchema,
+  type ListUsersQuery,
   UserDetailResponseSchema,
   UserListResponseSchema,
 } from "@real-demo/shared";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { startTransition } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { environment } from "../../shared/config/env";
 import {
@@ -22,7 +24,7 @@ import {
   mapUserToDetailModel,
   mapUserToListItem,
   type UserDetailModel,
-  type UserListItem,
+  type UsersPageModel,
 } from "./model";
 
 /**
@@ -35,11 +37,21 @@ const sdkRequest = {
   baseUrl: environment.apiBaseUrl,
 };
 
-export const useUsers = (): UseQueryResult<UserListItem[], unknown> =>
-  useListUsersGenerated({
+export const defaultUsersQuery = ListUsersQuerySchema.parse({});
+
+export const useUsers = (
+  query: Partial<ListUsersQuery> = defaultUsersQuery,
+): UseQueryResult<UsersPageModel, unknown> =>
+  useListUsersGenerated(ListUsersQuerySchema.parse(query), {
     query: {
-      select: (response) =>
-        UserListResponseSchema.parse(response.data).data.map(mapUserToListItem),
+      select: (response) => {
+        const parsedResponse = UserListResponseSchema.parse(response.data);
+
+        return {
+          items: parsedResponse.data.map(mapUserToListItem),
+          pagination: parsedResponse.pagination,
+        };
+      },
     },
     request: sdkRequest,
   });
@@ -51,7 +63,9 @@ export const useUserById = (
     query: {
       enabled: userId.length > 0,
       select: (response) =>
-        mapUserToDetailModel(UserDetailResponseSchema.parse(response.data).data),
+        mapUserToDetailModel(
+          UserDetailResponseSchema.parse(response.data).data,
+        ),
     },
     request: sdkRequest,
   });

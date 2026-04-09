@@ -19,7 +19,8 @@
     "prisma:push": "prisma db push --schema prisma/schema.prisma",
     "prisma:seed": "tsx prisma/seed.ts",
     "start": "node dist/main.js",
-    "test": "vitest run",
+    "test": "pnpm test:prepare-e2e && vitest run",
+    "test:prepare-e2e": "pnpm --dir ../.. exec turbo run build --filter=@real-demo/web",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "prisma": {

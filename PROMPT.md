@@ -22,7 +22,7 @@ The following must be completed first:
 
 - Monorepo base skeleton is runnable
 - Both frontend and backend can locally develop, build, lint, typecheck, and test
-- Frontend React + Vite + BrowserRouter + base path strategy is correct
+- Frontend React Router Framework Mode + Vite + base path strategy is correct
 - Backend NestJS + Prisma + MySQL + Redis base chain is runnable
 - Frontend FSD boundaries are clear
 - Backend core business modules use DDD layering
@@ -69,8 +69,8 @@ Do not provide alternatives; directly adopt the following.
 ### 3.2 Frontend
 
 - React
+- React Router v7 Framework Mode (default to SPA Mode in this split frontend/backend architecture)
 - Vite
-- React Router (BrowserRouter)
 - TanStack Query
 - Zustand
 - i18next
@@ -314,14 +314,14 @@ Must support:
 - Keyboard navigable
 - Dialogs support focus management
 - Color must not be the sole information carrier
-- Page-level route components default to `React.lazy` + `Suspense`
+- Prefer React Router route-module level code splitting and provide `HydrateFallback` or equivalent pending UI
 
 ## 8. Routing & Base Path
 
 ### 8.1 Routing Strategy
 
-- Use BrowserRouter
-- Use React Router `basename`
+- Use React Router Framework Mode
+- Configure React Router `basename` in `react-router.config.ts`
 - Use Vite `base`
 - Frontend must not assume deployment at root path `/`
 
@@ -340,18 +340,14 @@ Clearly implement and document the following rules:
 - Abnormal inputs like `""`, `"/"`, `"//"` must be normalized at the config layer
 - React Router `basename`, Vite `base`, NestJS static hosting path, and Swagger path must all follow the same normalization rules
 
-### 8.4 Vite `base` vs React Router `basename` Boundary
+### 8.4 Vite `base` vs React Router Framework `basename` Boundary
 
-Two modes must be clearly defined; do not mix them. Default to "mutable after deployment" mode:
+Default to build-time fixed base path mode:
 
-- Mutable after deployment (default):
-  - Vite `base` set to `./`
-  - React Router `basename` reads from `window.__APP_CONFIG__.basePath` or equivalent runtime config
-  - NestJS injects runtime config when serving `index.html`
-- Build-time fixed mode (fallback):
-  - Vite `base` and React Router `basename` can both read from `VITE_BASE_PATH`
-  - In this mode, static asset prefixes should not be dynamically modified after deployment
-  - Document how to switch to this mode
+- React Router `basename` in `react-router.config.ts` and Vite `base` must both read from the same normalized `VITE_BASE_PATH`
+- When `VITE_BASE_PATH` is unset, both must resolve to root `/`
+- Static asset prefixes and router basename are build-time fixed; do not try to mutate them after deployment
+- If deploy-time frontend config is still needed, reserve runtime injection for values such as API origin or feature flags, not for route basename or asset prefix
 
 ### 8.5 Deployment Configuration
 
@@ -360,8 +356,10 @@ Two modes must be clearly defined; do not mix them. Default to "mutable after de
 - API routes and SPA routes are clearly separated
 - Recommended API prefix: `${APP_BASE_PATH}/api/v1`
 - Swagger UI path: `${APP_BASE_PATH}/api/docs`
-- For frontend config that may change after deployment, provide a runtime injection mechanism, e.g., `window.__APP_CONFIG__`
-- During local development, Vite must configure `server.proxy` to proxy `/api` or equivalent API prefix to the backend port, avoiding CORS issues
+- For deploy-time frontend config that may still vary, provide a runtime injection mechanism, e.g., `window.__APP_CONFIG__`, but keep base path build-time fixed
+- During local development, provide a clear and documented API access strategy
+- Prefer configuring the React Router dev server (backed by Vite) to proxy `/api` or an equivalent API prefix to the backend port to reduce CORS complexity
+- If direct split-port access is intentionally used instead, allow an explicit `VITE_API_BASE_URL` (or equivalent) and keep CORS, environment variables, and SDK base URL resolution consistent
 
 ## 9. Backend Requirements
 
@@ -505,21 +503,22 @@ Must provide:
 
 Frontend build-time variables:
 
+- `VITE_API_BASE_URL` (optional; mainly for local development or explicit cross-origin API targets)
 - `VITE_APP_NAME`
 - `VITE_DEFAULT_LOCALE`
 - `VITE_DEFAULT_THEME`
-- `VITE_BASE_PATH` (build-time fixed mode only)
+- `VITE_BASE_PATH`
 
 Frontend runtime injection variables:
 
 - `APP_RUNTIME_API_BASE_URL`
-- `APP_RUNTIME_BASE_PATH`
 
 Notes:
 
-- These two values are not frontend build-time environment variables
-- They are injected by NestJS into `window.__APP_CONFIG__` when serving `index.html`
-- They do not need to be written into frontend `.env` files
+- `VITE_API_BASE_URL` is a frontend build-time fallback and should stay aligned with the chosen local-development or cross-origin API strategy
+- `APP_RUNTIME_API_BASE_URL` is not a frontend build-time environment variable
+- `APP_RUNTIME_API_BASE_URL` is injected by NestJS into `window.__APP_CONFIG__` when serving `index.html`
+- `APP_RUNTIME_API_BASE_URL` does not need to be written into frontend `.env` files
 - The corresponding server-side config sources should be declared and mapped centrally in the backend config layer
 
 Backend variables:

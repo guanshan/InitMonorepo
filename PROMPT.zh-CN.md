@@ -22,7 +22,7 @@
 
 - Monorepo 基础骨架可运行
 - 前后端都能本地开发、构建、lint、typecheck、测试
-- 前端 React + Vite + BrowserRouter + base path 方案正确
+- 前端 React Router Framework Mode + Vite + base path 方案正确
 - 后端 NestJS + Prisma + MySQL + Redis 基础链路可运行
 - 前端 FSD 边界清晰
 - 后端核心业务模块采用 DDD 分层
@@ -69,8 +69,8 @@
 ### 3.2 前端
 
 - React
+- React Router v7 Framework Mode（在此前后端分离架构下默认采用 SPA Mode）
 - Vite
-- React Router（BrowserRouter）
 - TanStack Query
 - Zustand
 - i18next
@@ -316,14 +316,14 @@ apps/web/src
 - 键盘可达
 - 弹窗支持焦点管理
 - 颜色不能作为唯一信息载体
-- 页面级路由组件默认使用 `React.lazy` + `Suspense`
+- 优先采用 React Router route module 级别的代码分割，并提供 `HydrateFallback` 或等价的加载态
 
 ## 8. 路由与 Base Path
 
 ### 8.1 路由策略
 
-- 使用 BrowserRouter
-- 使用 React Router `basename`
+- 使用 React Router Framework Mode
+- 在 `react-router.config.ts` 中配置 React Router `basename`
 - 使用 Vite `base`
 - 前端不能假设自己部署在根路径 `/`
 
@@ -342,18 +342,14 @@ apps/web/src
 - `""`、`"/"`、`"//"` 等异常输入必须在配置层被统一归一化
 - React Router `basename`、Vite `base`、NestJS 静态托管路径、Swagger 路径必须基于同一套归一化规则
 
-### 8.4 Vite `base` 与 React Router `basename` 的边界
+### 8.4 Vite `base` 与 React Router Framework `basename` 的边界
 
-必须明确两种模式，不要混用。默认采用“部署后可变”模式：
+默认采用“构建时固定 base path”模式：
 
-- 部署后可变模式（默认）：
-  - Vite `base` 设为 `./`
-  - React Router `basename` 从 `window.__APP_CONFIG__.basePath` 或等价运行时配置读取
-  - 由 NestJS 在返回 `index.html` 时注入运行时配置
-- 构建时固定模式（备用）：
-  - Vite `base` 与 React Router `basename` 可以同时从 `VITE_BASE_PATH` 读取
-  - 此模式下部署后不应再试图动态修改静态资源前缀
-  - 文档中说明如何切换到此模式
+- `react-router.config.ts` 中的 React Router `basename` 与 Vite `base` 必须同时从同一个归一化后的 `VITE_BASE_PATH` 读取
+- 当 `VITE_BASE_PATH` 未设置时，两者都应回退到根路径 `/`
+- 路由 basename 与静态资源前缀属于构建时固定值，部署后不要再尝试动态修改
+- 如果仍有部署时可变的前端配置需求，运行时注入机制只用于 API origin、feature flags 等值，不用于 base path 或静态资源前缀
 
 ### 8.5 部署配置
 
@@ -362,8 +358,10 @@ apps/web/src
 - API 路由与 SPA 路由明确分离
 - 推荐 API 前缀为 `${APP_BASE_PATH}/api/v1`
 - Swagger UI 路径为 `${APP_BASE_PATH}/api/docs`
-- 对部署后仍可能变化的前端配置，提供运行时注入机制，例如 `window.__APP_CONFIG__`
-- 本地开发时，Vite 必须配置 `server.proxy`，将 `/api` 或等价 API 前缀代理到后端端口，避免跨域问题
+- 对部署时仍可能变化的前端配置，提供运行时注入机制，例如 `window.__APP_CONFIG__`，但 base path 保持构建时固定
+- 本地开发时，必须提供明确且可文档化的 API 接入策略
+- 优先推荐由 React Router dev server（底层由 Vite 驱动）通过 `server.proxy` 将 `/api` 或等价 API 前缀代理到后端端口，以降低 CORS 复杂度
+- 如果明确采用前后端分端口直连，也可以通过 `VITE_API_BASE_URL` 或等价配置直连后端，但必须保证 CORS、环境变量和 SDK base URL 解析策略一致
 
 ## 9. 后端要求
 
@@ -507,21 +505,22 @@ apps/web/src
 
 前端构建时变量：
 
+- `VITE_API_BASE_URL`（可选；主要用于本地开发或明确的跨域 API 目标）
 - `VITE_APP_NAME`
 - `VITE_DEFAULT_LOCALE`
 - `VITE_DEFAULT_THEME`
-- `VITE_BASE_PATH`（仅构建时固定模式使用）
+- `VITE_BASE_PATH`
 
 前端运行时注入变量：
 
 - `APP_RUNTIME_API_BASE_URL`
-- `APP_RUNTIME_BASE_PATH`
 
 说明：
 
-- 这两个值不是前端构建时环境变量
-- 它们由 NestJS 在返回 `index.html` 时注入到 `window.__APP_CONFIG__`
-- 它们不要求直接写入前端 `.env` 文件
+- `VITE_API_BASE_URL` 是前端构建时兜底配置，应与选定的本地开发或跨域 API 接入策略保持一致
+- `APP_RUNTIME_API_BASE_URL` 不是前端构建时环境变量
+- `APP_RUNTIME_API_BASE_URL` 由 NestJS 在返回 `index.html` 时注入到 `window.__APP_CONFIG__`
+- `APP_RUNTIME_API_BASE_URL` 不要求直接写入前端 `.env` 文件
 - 对应的服务端配置来源应在后端配置层统一声明和映射
 
 后端变量：

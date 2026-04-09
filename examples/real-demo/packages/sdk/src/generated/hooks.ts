@@ -28,6 +28,7 @@ import type {
   ApiFailureDto,
   CreateUserDto,
   CreateUserResponseDto,
+  ListUsersParams,
   UserDetailResponseDto,
   UserListResponseDto
 } from './model';
@@ -57,17 +58,24 @@ export type listUsersResponseSuccess = (listUsersResponse200) & {
 
 export type listUsersResponse = (listUsersResponseSuccess)
 
-export const getListUsersUrl = () => {
+export const getListUsersUrl = (params?: ListUsersParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/users`
+  return stringifiedParams.length > 0 ? `/api/v1/users?${stringifiedParams}` : `/api/v1/users`
 }
 
-export const listUsers = async ( options?: RequestInit): Promise<listUsersResponse> => {
+export const listUsers = async (params?: ListUsersParams, options?: RequestInit): Promise<listUsersResponse> => {
 
-  return customFetcher<listUsersResponse>(getListUsersUrl(),
+  return customFetcher<listUsersResponse>(getListUsersUrl(params),
   {
     ...options,
     method: 'GET'
@@ -80,23 +88,23 @@ export const listUsers = async ( options?: RequestInit): Promise<listUsersRespon
 
 
 
-export const getListUsersQueryKey = () => {
+export const getListUsersQueryKey = (params?: ListUsersParams,) => {
     return [
-    `/api/users`
+    `/api/v1/users`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListUsersQueryOptions = <TData = Awaited<ReturnType<typeof listUsers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+export const getListUsersQueryOptions = <TData = Awaited<ReturnType<typeof listUsers>>, TError = unknown>(params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListUsersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListUsersQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUsers>>> = ({ signal }) => listUsers({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUsers>>> = ({ signal }) => listUsers(params, { signal, ...requestOptions });
 
 
 
@@ -110,7 +118,7 @@ export type ListUsersQueryError = unknown
 
 
 export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>> & Pick<
+ params: undefined |  ListUsersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listUsers>>,
           TError,
@@ -120,7 +128,7 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>> & Pick<
+ params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listUsers>>,
           TError,
@@ -130,7 +138,7 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -138,11 +146,11 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
  */
 
 export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListUsersQueryOptions(options)
+  const queryOptions = getListUsersQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -185,7 +193,7 @@ export const getCreateUserUrl = () => {
 
 
 
-  return `/api/users`
+  return `/api/v1/users`
 }
 
 export const createUser = async (createUserDto: CreateUserDto, options?: RequestInit): Promise<createUserResponse> => {
@@ -275,7 +283,7 @@ export const getGetUserByIdUrl = (id: string,) => {
 
 
 
-  return `/api/users/${id}`
+  return `/api/v1/users/${id}`
 }
 
 export const getUserById = async (id: string, options?: RequestInit): Promise<getUserByIdResponse> => {
@@ -295,7 +303,7 @@ export const getUserById = async (id: string, options?: RequestInit): Promise<ge
 
 export const getGetUserByIdQueryKey = (id: string,) => {
     return [
-    `/api/users/${id}`
+    `/api/v1/users/${id}`
     ] as const;
     }
 

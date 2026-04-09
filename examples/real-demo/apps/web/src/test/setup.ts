@@ -10,6 +10,11 @@ import { useThemeStore } from "../shared/store/theme-store";
 import { server } from "./server";
 
 initializeI18n(resources);
+Reflect.set(window, "$RefreshReg$", () => {});
+Reflect.set(window, "$RefreshSig$", () => (type: unknown) => type);
+Reflect.set(window, "__vite_plugin_react_preamble_installed__", true);
+Reflect.set(globalThis, "$RefreshReg$", Reflect.get(window, "$RefreshReg$"));
+Reflect.set(globalThis, "$RefreshSig$", Reflect.get(window, "$RefreshSig$"));
 
 beforeAll(() => {
   server.listen({

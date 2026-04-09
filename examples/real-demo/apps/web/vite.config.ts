@@ -1,28 +1,16 @@
 /// <reference types="vitest/config" />
 
-import react from "@vitejs/plugin-react";
+import { reactRouter } from "@react-router/dev/vite";
+import { normalizeBasePath } from "@real-demo/shared";
 import { defineConfig, loadEnv } from "vite";
-
-const normalizeBasePath = (input: string | undefined) => {
-  const trimmed = (input ?? "").trim();
-
-  if (trimmed.length === 0 || trimmed === "/") {
-    return "/";
-  }
-
-  const withLeadingSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
-  const normalized = withLeadingSlash.replace(/\/{2,}/g, "/").replace(/\/+$/g, "");
-
-  return normalized.length === 0 ? "/" : normalized;
-};
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const fixedBasePath = env.VITE_BASE_PATH ? normalizeBasePath(env.VITE_BASE_PATH) : null;
 
   return {
-    base: fixedBasePath ? `${fixedBasePath}/` : "./",
-    plugins: [react()],
+    base: fixedBasePath ? `${fixedBasePath}/` : "/",
+    plugins: [reactRouter()],
     server: {
       port: 14000,
       proxy: {

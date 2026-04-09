@@ -1,6 +1,8 @@
 import {
   CreateUserInputSchema,
   type CreateUserInput as CreateUserRequest,
+  ListUsersQuerySchema,
+  type ListUsersQuery,
 } from "@real-demo/shared";
 import {
   Body,
@@ -9,6 +11,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   Req,
 } from "@nestjs/common";
 import {
@@ -19,6 +22,7 @@ import {
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
 import { ZodResponse } from "nestjs-zod";
@@ -27,7 +31,10 @@ import {
   getOrCreateRequestId,
   type RequestWithRequestId,
 } from "../../../common/http/request-id";
-import { successResponse } from "../../../common/http/success-response";
+import {
+  paginatedResponse,
+  successResponse,
+} from "../../../common/http/success-response";
 import { ZodValidationPipe } from "../../../common/validation/zod-validation.pipe";
 import { CreateUserUseCase } from "../application/use-cases/create-user.use-case";
 import { GetUserByIdUseCase } from "../application/use-cases/get-user-by-id.use-case";
@@ -70,18 +77,44 @@ export class UsersController {
   @ApiOperation({
     summary: "List users",
   })
+  @ApiQuery({
+    description: "1-based page number",
+    example: 1,
+    name: "page",
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    description: "Number of users returned per page",
+    example: 20,
+    name: "pageSize",
+    required: false,
+    type: Number,
+  })
   @ZodResponse({
-    description: "Returns the list of users",
+    description: "Returns a paginated list of users",
     status: 200,
     type: UserListResponseDto,
   })
-  async listUsers(@Req() request: RequestWithRequestId) {
-    const result = await this.listUsersUseCase.execute();
+  async listUsers(
+    @Query(new ZodValidationPipe(ListUsersQuerySchema))
+    query: ListUsersQuery,
+    @Req() request: RequestWithRequestId,
+  ) {
+    const result = await this.listUsersUseCase.execute(query);
 
-    return successResponse(presentUsers(result.users), {
-      cached: result.cached,
-      requestId: getOrCreateRequestId(request),
-    });
+    return paginatedResponse(
+      presentUsers(result.users),
+      {
+        page: result.page,
+        pageSize: result.pageSize,
+        totalItems: result.totalItems,
+      },
+      {
+        cached: result.cached,
+        requestId: getOrCreateRequestId(request),
+      },
+    );
   }
 
   @Get(":id")

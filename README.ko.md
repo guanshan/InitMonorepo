@@ -9,7 +9,7 @@ AI가 **프로덕션 수준의 풀스택 TypeScript Monorepo**를 한 번에 초
 [PROMPT.ko.md](PROMPT.ko.md)를 LLM에 입력하면 다음을 포함하는 완전히 실행 가능한 프로젝트가 생성됩니다:
 
 - **Monorepo 골격** — pnpm workspace + Turborepo + TypeScript Project References
-- **프론트엔드** — React + Vite + BrowserRouter + FSD 아키텍처 + TanStack Query + Zustand + i18n + 라이트/다크 테마
+- **프론트엔드** — React Router v7 Framework Mode(SPA Mode) + Vite + FSD 아키텍처 + TanStack Query + Zustand + i18n + 라이트/다크 테마
 - **백엔드** — NestJS + Prisma + MySQL + Redis + DDD 레이어링 + Pino 구조화 로깅
 - **API 계약** — Zod 통합 스키마 → OpenAPI → Orval 자동 생성 타입 SDK
 - **예제 비즈니스 모듈** — User Management 전체 흐름 (프론트엔드 페이지 → SDK → Controller → Use Case → Repository → MySQL/Redis)
@@ -28,7 +28,7 @@ AI가 **프로덕션 수준의 풀스택 TypeScript Monorepo**를 한 번에 초
 - **우선순위 레이어** (Must / Should / Nice-to-have) — 모델의 토큰 부족 시 실행 불가능한 미완성 결과물 방지
 - **인수 기준** — 파일 생성만으로 완료를 선언하지 않고, 명령 체인의 실제 검증을 요구
 - **경계 제약** — 엔지니어링 규칙(ESLint boundaries, package exports, 경로 별칭)으로 아키텍처 경계 강제
-- **베이스 경로 정규화** — 비루트 경로 배포 지원 (런타임 주입 및 빌드 시 고정 모드)
+- **베이스 경로 정규화** — 비루트 경로 배포를 지원하되 basename과 정적 자산 접두사는 빌드 시 고정하고, 런타임 주입은 API origin 같은 값에만 사용
 - **상태 경계** — TanStack Query는 서버 상태 관리, Zustand는 UI 전역 상태만 관리
 - **범위 제한 DDD** — 핵심 비즈니스 모듈은 DDD, 인프라 모듈은 과도한 추상화 회피
 

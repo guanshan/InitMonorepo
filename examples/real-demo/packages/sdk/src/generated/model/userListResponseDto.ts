@@ -7,9 +7,11 @@
  */
 import type { UserListResponseDtoDataItem } from './userListResponseDtoDataItem';
 import type { UserListResponseDtoMeta } from './userListResponseDtoMeta';
+import type { UserListResponseDtoPagination } from './userListResponseDtoPagination';
 
 export interface UserListResponseDto {
   success: boolean;
   data: UserListResponseDtoDataItem[];
+  pagination: UserListResponseDtoPagination;
   meta: UserListResponseDtoMeta;
 }

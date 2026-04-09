@@ -4,5 +4,5 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "noEmit": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["react-router.config.ts", "vite.config.ts"]
 }

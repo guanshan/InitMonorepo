@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { createApiSuccessSchema } from "../contracts/api-envelope.js";
+import {
+  createApiPaginatedSchema,
+  createApiSuccessSchema,
+} from "../contracts/api-envelope.js";
 
 export const UserRoleSchema = z.enum(["ADMIN", "MEMBER", "SUPPORT"]);
 
@@ -32,8 +35,15 @@ export const CreateUserInputSchema = z
   })
   .strict();
 
+export const ListUsersQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  })
+  .strict();
+
 export const UserListSchema = z.array(UserSchema);
 
-export const UserListResponseSchema = createApiSuccessSchema(UserListSchema);
+export const UserListResponseSchema = createApiPaginatedSchema(UserSchema);
 export const UserDetailResponseSchema = createApiSuccessSchema(UserSchema);
 export const CreateUserResponseSchema = createApiSuccessSchema(UserSchema);

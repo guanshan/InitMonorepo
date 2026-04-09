@@ -22,7 +22,7 @@
 
 - Monorepo 基本骨格が実行可能
 - フロントエンドとバックエンドの両方がローカルで開発、ビルド、lint、typecheck、テスト可能
-- フロントエンド React + Vite + BrowserRouter + base path 戦略が正しい
+- フロントエンド React Router Framework Mode + Vite + base path 戦略が正しい
 - バックエンド NestJS + Prisma + MySQL + Redis 基本チェーンが実行可能
 - フロントエンド FSD 境界が明確
 - バックエンドコアビジネスモジュールが DDD レイヤリングを使用
@@ -69,8 +69,8 @@
 ### 3.2 フロントエンド
 
 - React
+- React Router v7 Framework Mode（このフロントエンド/バックエンド分離構成ではデフォルトで SPA Mode）
 - Vite
-- React Router（BrowserRouter）
 - TanStack Query
 - Zustand
 - i18next
@@ -316,14 +316,14 @@ apps/web/src
 - キーボードで操作可能
 - ダイアログはフォーカス管理をサポート
 - 色を唯一の情報伝達手段にしない
-- ページレベルのルートコンポーネントはデフォルトで `React.lazy` + `Suspense`
+- React Router の route module レベルのコード分割を優先し、`HydrateFallback` または同等の待機 UI を提供する
 
 ## 8. ルーティングとベースパス
 
 ### 8.1 ルーティング戦略
 
-- BrowserRouter を使用
-- React Router `basename` を使用
+- React Router Framework Mode を使用
+- `react-router.config.ts` で React Router `basename` を設定
 - Vite `base` を使用
 - フロントエンドはルートパス `/` でのデプロイを前提としない
 
@@ -342,18 +342,14 @@ apps/web/src
 - `""`、`"/"`、`"//"` などの異常入力は設定レイヤーで統一的に正規化する必要がある
 - React Router `basename`、Vite `base`、NestJS 静的ホスティングパス、Swagger パスはすべて同じ正規化ルールに従う必要がある
 
-### 8.4 Vite `base` と React Router `basename` の境界
+### 8.4 Vite `base` と React Router Framework `basename` の境界
 
-2つのモードを明確に定義する必要がある。混在させない。デフォルトは「デプロイ後に変更可能」モード：
+デフォルトは「ビルド時固定 base path」モード：
 
-- デプロイ後に変更可能モード（デフォルト）：
-  - Vite `base` を `./` に設定
-  - React Router `basename` は `window.__APP_CONFIG__.basePath` または同等のランタイム設定から読み取り
-  - NestJS が `index.html` を返す際にランタイム設定を注入
-- ビルド時固定モード（フォールバック）：
-  - Vite `base` と React Router `basename` は両方とも `VITE_BASE_PATH` から読み取り可能
-  - このモードでは、デプロイ後に静的アセットプレフィックスを動的に変更すべきでない
-  - このモードへの切り替え方法をドキュメント化
+- `react-router.config.ts` の React Router `basename` と Vite `base` は、同じ正規化済み `VITE_BASE_PATH` から読み取る
+- `VITE_BASE_PATH` が未設定の場合、両方ともルート `/` に解決される
+- ルーターの basename と静的アセットプレフィックスはビルド時固定値とし、デプロイ後に動的変更しない
+- デプロイ時に変わり得るフロントエンド設定が必要な場合でも、ランタイム注入は API origin や feature flags などに限定し、base path やアセット接頭辞には使わない
 
 ### 8.5 デプロイ設定
 
@@ -362,8 +358,10 @@ apps/web/src
 - API ルートと SPA ルートを明確に分離
 - 推奨 API プレフィックス：`${APP_BASE_PATH}/api/v1`
 - Swagger UI パス：`${APP_BASE_PATH}/api/docs`
-- デプロイ後に変更される可能性のあるフロントエンド設定には、ランタイム注入メカニズムを提供（例：`window.__APP_CONFIG__`）
-- ローカル開発時、Vite は `server.proxy` を設定して `/api` または同等の API プレフィックスをバックエンドポートにプロキシし、CORS 問題を回避
+- デプロイ時に変わり得るフロントエンド設定には、`window.__APP_CONFIG__` のようなランタイム注入機構を提供してよいが、base path はビルド時固定とする
+- ローカル開発時は、明確で文書化可能な API 接続戦略を提供すること
+- 既定では、React Router dev server（内部的には Vite）が `server.proxy` を設定し、`/api` または同等の API プレフィックスをバックエンドポートへプロキシして CORS の複雑さを減らすことを推奨する
+- 意図的にフロントエンドとバックエンドを別ポート直結にする場合は、`VITE_API_BASE_URL` などの明示的設定を許可してよいが、CORS、環境変数、SDK の base URL 解決方針を一貫させること
 
 ## 9. バックエンド要件
 
@@ -507,21 +505,22 @@ apps/web/src
 
 フロントエンドビルド時変数：
 
+- `VITE_API_BASE_URL`（任意。主にローカル開発または明示的なクロスオリジン API 接続向け）
 - `VITE_APP_NAME`
 - `VITE_DEFAULT_LOCALE`
 - `VITE_DEFAULT_THEME`
-- `VITE_BASE_PATH`（ビルド時固定モードのみ）
+- `VITE_BASE_PATH`
 
 フロントエンドランタイム注入変数：
 
 - `APP_RUNTIME_API_BASE_URL`
-- `APP_RUNTIME_BASE_PATH`
 
 説明：
 
-- これら2つの値はフロントエンドビルド時の環境変数ではない
-- NestJS が `index.html` を返す際に `window.__APP_CONFIG__` に注入
-- フロントエンドの `.env` ファイルに書き込む必要はない
+- `VITE_API_BASE_URL` はフロントエンドのビルド時フォールバック設定であり、選択したローカル開発またはクロスオリジン API 戦略と整合している必要がある
+- `APP_RUNTIME_API_BASE_URL` はフロントエンドビルド時の環境変数ではない
+- `APP_RUNTIME_API_BASE_URL` は NestJS が `index.html` を返す際に `window.__APP_CONFIG__` に注入する
+- `APP_RUNTIME_API_BASE_URL` をフロントエンドの `.env` ファイルに書き込む必要はない
 - 対応するサーバーサイドの設定ソースはバックエンド設定レイヤーで集中的に宣言・マッピング
 
 バックエンド変数：

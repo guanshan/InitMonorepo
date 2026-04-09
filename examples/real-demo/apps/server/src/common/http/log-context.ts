@@ -21,7 +21,10 @@ export const getLogModule = (pathname: string) => {
   }
 
   if (segments[0] === "api") {
-    return segments[1] ?? "api";
+    const apiModuleSegment =
+      segments[1] && /^v\d+$/i.test(segments[1]) ? segments[2] : segments[1];
+
+    return apiModuleSegment ?? "api";
   }
 
   if (

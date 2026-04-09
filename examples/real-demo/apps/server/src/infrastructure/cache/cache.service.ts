@@ -1,6 +1,11 @@
 import type { RedisClientType } from "redis";
 
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from "@nestjs/common";
 import { createClient } from "redis";
 
 import type { CachePort } from "../../common/cache/cache.port";
@@ -44,7 +49,13 @@ export class CacheService implements CachePort, OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    await this.client.del(key);
+    try {
+      await this.client.del(key);
+    } catch (error) {
+      this.logger.warn(
+        `Redis delete failed for key "${key}": ${error instanceof Error ? error.message : "unknown error"}`,
+      );
+    }
   }
 
   async isReady() {
@@ -68,8 +79,35 @@ export class CacheService implements CachePort, OnModuleInit, OnModuleDestroy {
       return null;
     }
 
-    const value = await this.client.get(key);
-    return value ? (JSON.parse(value) as TValue) : null;
+    try {
+      const value = await this.client.get(key);
+      return value ? (JSON.parse(value) as TValue) : null;
+    } catch (error) {
+      this.logger.warn(
+        `Redis get failed for key "${key}": ${error instanceof Error ? error.message : "unknown error"}`,
+      );
+      return null;
+    }
+  }
+
+  async increment(key: string, ttlSeconds = 60) {
+    if (!this.client?.isOpen) {
+      return null;
+    }
+
+    try {
+      const value = await this.client.eval(
+        `local c = redis.call('INCR', KEYS[1]) if c == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end return c`,
+        { keys: [key], arguments: [String(ttlSeconds)] },
+      );
+
+      return typeof value === "number" ? value : null;
+    } catch (error) {
+      this.logger.warn(
+        `Redis increment failed for key "${key}": ${error instanceof Error ? error.message : "unknown error"}`,
+      );
+      return null;
+    }
   }
 
   async set<TValue>(key: string, value: TValue, ttlSeconds = 60) {
@@ -77,8 +115,14 @@ export class CacheService implements CachePort, OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    await this.client.set(key, JSON.stringify(value), {
-      EX: ttlSeconds,
-    });
+    try {
+      await this.client.set(key, JSON.stringify(value), {
+        EX: ttlSeconds,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Redis set failed for key "${key}": ${error instanceof Error ? error.message : "unknown error"}`,
+      );
+    }
   }
 }

@@ -17,6 +17,10 @@
       "dependsOn": ["@real-demo/sdk#generate-sdk", "^build"],
       "outputs": ["dist/**"]
     },
+    "@real-demo/server#test": {
+      "dependsOn": ["@real-demo/web#build", "^build"],
+      "outputs": []
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "coverage/**"]

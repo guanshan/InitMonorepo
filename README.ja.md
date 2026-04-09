@@ -9,7 +9,7 @@ AIに**本番グレードのフルスタック TypeScript Monorepo**を一発で
 [PROMPT.ja.md](PROMPT.ja.md) を LLM に入力すると、以下を含む完全に実行可能なプロジェクトが生成されます：
 
 - **Monorepo 骨格** — pnpm workspace + Turborepo + TypeScript Project References
-- **フロントエンド** — React + Vite + BrowserRouter + FSD アーキテクチャ + TanStack Query + Zustand + i18n + ライト/ダークテーマ
+- **フロントエンド** — React Router v7 Framework Mode（SPA Mode）+ Vite + FSD アーキテクチャ + TanStack Query + Zustand + i18n + ライト/ダークテーマ
 - **バックエンド** — NestJS + Prisma + MySQL + Redis + DDD レイヤリング + Pino 構造化ログ
 - **API コントラクト** — Zod 統一スキーマ → OpenAPI → Orval 自動生成型付き SDK
 - **サンプルビジネスモジュール** — User Management 完全フロー（フロントエンドページ → SDK → Controller → Use Case → Repository → MySQL/Redis）
@@ -28,7 +28,7 @@ AIに**本番グレードのフルスタック TypeScript Monorepo**を一発で
 - **優先度レイヤー**（Must / Should / Nice-to-have）— モデルのトークン不足時に実行不能な半端な成果物を防止
 - **受け入れ基準** — ファイル生成だけで完了を宣言せず、コマンドチェーンの実際の検証を要求
 - **境界制約** — エンジニアリングルール（ESLint boundaries、package exports、パスエイリアス）でアーキテクチャ境界を強制
-- **ベースパス正規化** — 非ルートパスデプロイをサポート（ランタイム注入とビルド時固定の両モード）
+- **ベースパス正規化** — 非ルートパスデプロイをサポートし、basename と静的アセット接頭辞はビルド時固定、ランタイム注入は API origin などに限定
 - **ステート境界** — TanStack Query はサーバーステート管理、Zustand は UI グローバルステートのみ
 - **スコープ限定 DDD** — コアビジネスモジュールは DDD、インフラモジュールは過度な抽象化を回避
 

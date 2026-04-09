@@ -1,10 +1,13 @@
 import type { CreateUserDraft } from "../../domain/user";
 import type { UserRepository } from "../../domain/user.repository";
 
-import { ConflictException, Inject, Injectable } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, Logger } from "@nestjs/common";
 
 import { cacheKeys } from "../../../../common/cache/cache-keys";
-import { CACHE_PORT, type CachePort } from "../../../../common/cache/cache.port";
+import {
+  CACHE_PORT,
+  type CachePort,
+} from "../../../../common/cache/cache.port";
 import {
   DuplicateUserEmailError,
   USER_REPOSITORY,
@@ -13,6 +16,8 @@ import { serializeUserForCache } from "../user-cache-snapshot";
 
 @Injectable()
 export class CreateUserUseCase {
+  private readonly logger = new Logger(CreateUserUseCase.name);
+
   constructor(
     @Inject(USER_REPOSITORY) private readonly repository: UserRepository,
     @Inject(CACHE_PORT) private readonly cacheService: CachePort,
@@ -21,12 +26,22 @@ export class CreateUserUseCase {
   async execute(input: CreateUserDraft) {
     try {
       const user = await this.repository.create(input);
-      await this.cacheService.delete(cacheKeys.query.usersList());
-      await this.cacheService.set(
-        cacheKeys.entity.userById(user.id),
-        serializeUserForCache(user),
-        120,
-      );
+      const [usersListCacheVersion] = await Promise.all([
+        this.cacheService.increment(cacheKeys.query.usersListVersion(), 3600),
+        this.cacheService.set(
+          cacheKeys.entity.userById(user.id),
+          serializeUserForCache(user),
+          120,
+        ),
+      ]);
+
+      if (usersListCacheVersion === null) {
+        this.logger.warn(
+          `Cache version increment returned null for users-list-version-increment (userId=${user.id}). ` +
+            `Redis may be unavailable; stale list pages could persist until their TTL expires.`,
+        );
+      }
+
       return user;
     } catch (error) {
       if (error instanceof DuplicateUserEmailError) {

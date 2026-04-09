@@ -2,10 +2,9 @@ import { normalizeBasePath } from "@real-demo/shared";
 import { z } from "zod";
 
 const APP_RUNTIME_API_BASE_URL_SENTINEL = "__APP_RUNTIME_API_BASE_URL__";
-const APP_RUNTIME_BASE_PATH_SENTINEL = "__APP_RUNTIME_BASE_PATH__";
 
 const EnvironmentSchema = z.object({
-  VITE_API_BASE_URL: z.string().default("http://localhost:13000"),
+  VITE_API_BASE_URL: z.string().default(""),
   VITE_APP_NAME: z.string().default("Real Demo"),
   VITE_BASE_PATH: z.string().optional(),
   VITE_DEFAULT_LOCALE: z.string().default("en"),
@@ -16,7 +15,6 @@ declare global {
   interface Window {
     __APP_CONFIG__?: {
       APP_RUNTIME_API_BASE_URL?: string;
-      APP_RUNTIME_BASE_PATH?: string;
     };
   }
 }
@@ -34,11 +32,7 @@ export const environment = {
       APP_RUNTIME_API_BASE_URL_SENTINEL,
     ) ?? parsedEnvironment.VITE_API_BASE_URL,
   appName: parsedEnvironment.VITE_APP_NAME,
-  appBasePath: normalizeBasePath(
-    resolveRuntimeValue(runtimeConfig?.APP_RUNTIME_BASE_PATH, APP_RUNTIME_BASE_PATH_SENTINEL) ??
-      parsedEnvironment.VITE_BASE_PATH ??
-      "/",
-  ),
+  appBasePath: normalizeBasePath(parsedEnvironment.VITE_BASE_PATH),
   defaultLocale: parsedEnvironment.VITE_DEFAULT_LOCALE,
   defaultTheme: parsedEnvironment.VITE_DEFAULT_THEME,
 };

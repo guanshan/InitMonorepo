@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
 import {
   DuplicateUserEmailError,
+  type ListUsersInput,
   type UserRepository,
 } from "../../domain/user.repository";
 
@@ -57,13 +58,27 @@ export class PrismaUserRepository implements UserRepository {
     return user ? mapUser(user) : null;
   }
 
-  async list() {
-    const users = await this.prismaService.user.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+  async list({ page, pageSize }: ListUsersInput) {
+    const skip = (page - 1) * pageSize;
+    const [users, totalItems] = await this.prismaService.$transaction([
+      this.prismaService.user.findMany({
+        orderBy: [
+          {
+            createdAt: "desc",
+          },
+          {
+            id: "desc",
+          },
+        ],
+        skip,
+        take: pageSize,
+      }),
+      this.prismaService.user.count(),
+    ]);
 
-    return users.map(mapUser);
+    return {
+      totalItems,
+      users: users.map(mapUser),
+    };
   }
 }

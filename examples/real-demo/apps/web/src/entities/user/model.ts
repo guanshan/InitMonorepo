@@ -1,4 +1,9 @@
-import type { CreateUserInput, User, UserRole } from "@real-demo/shared";
+import type {
+  CreateUserInput,
+  Pagination,
+  User,
+  UserRole,
+} from "@real-demo/shared";
 
 const getUserInitial = (name: string) => name.trim().charAt(0).toUpperCase();
 
@@ -13,6 +18,11 @@ export interface UserListItem {
 export interface UserDetailModel extends UserListItem {
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface UsersPageModel {
+  items: UserListItem[];
+  pagination: Pagination;
 }
 
 export type CreateUserDraft = Pick<CreateUserInput, "email" | "name" | "role">;

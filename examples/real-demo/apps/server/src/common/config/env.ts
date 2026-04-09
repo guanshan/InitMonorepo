@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const loopbackHostnames = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const loopbackOrigins = ["localhost", "127.0.0.1", "[::1]"];
+const DEFAULT_TRUST_PROXY = "false";
 
 const BooleanEnvironmentSchema = z
   .enum(["true", "false"])
@@ -17,11 +18,16 @@ const EnvironmentSchema = z.object({
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
   PORT: z.coerce.number().int().positive().default(13000),
   REDIS_URL: z.string().trim().optional(),
   SWAGGER_ENABLED: BooleanEnvironmentSchema,
+  TRUST_PROXY: z.string().default(DEFAULT_TRUST_PROXY),
 });
+
+type TrustProxyValue = boolean | number | string | string[];
 
 type Environment = {
   appBasePath: string;
@@ -33,6 +39,7 @@ type Environment = {
   redisUrl: string;
   runtimeApiBaseUrl: string;
   swaggerEnabled: boolean;
+  trustProxy: TrustProxyValue;
 };
 
 const resolveConnectionString = (
@@ -65,7 +72,8 @@ const expandLoopbackCorsOrigin = (origin: string) => {
       return [trimmedOrigin];
     }
 
-    const portSuffix = parsedOrigin.port.length > 0 ? `:${parsedOrigin.port}` : "";
+    const portSuffix =
+      parsedOrigin.port.length > 0 ? `:${parsedOrigin.port}` : "";
 
     return loopbackOrigins.map(
       (hostname) => `${parsedOrigin.protocol}//${hostname}${portSuffix}`,
@@ -73,6 +81,29 @@ const expandLoopbackCorsOrigin = (origin: string) => {
   } catch {
     return [trimmedOrigin];
   }
+};
+
+const resolveTrustProxy = (value: string): TrustProxyValue => {
+  const trimmedValue = value.trim();
+
+  if (trimmedValue === "true") {
+    return true;
+  }
+
+  if (trimmedValue === "false" || trimmedValue.length === 0) {
+    return false;
+  }
+
+  if (/^\d+$/.test(trimmedValue)) {
+    return Number(trimmedValue);
+  }
+
+  const trustedProxySegments = trimmedValue
+    .split(",")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  return trustedProxySegments.length > 1 ? trustedProxySegments : trimmedValue;
 };
 
 export const loadEnvironment = (): Environment => {
@@ -99,7 +130,11 @@ export const loadEnvironment = (): Environment => {
 
   return {
     appBasePath: normalizedAppBasePath,
-    corsOrigins: [...new Set(parsed.CORS_ORIGIN.split(",").flatMap(expandLoopbackCorsOrigin))],
+    corsOrigins: [
+      ...new Set(
+        parsed.CORS_ORIGIN.split(",").flatMap(expandLoopbackCorsOrigin),
+      ),
+    ],
     databaseUrl,
     logLevel: parsed.LOG_LEVEL,
     nodeEnv: parsed.NODE_ENV,
@@ -107,5 +142,6 @@ export const loadEnvironment = (): Environment => {
     redisUrl,
     runtimeApiBaseUrl: normalizedRuntimeApiBaseUrl,
     swaggerEnabled: parsed.SWAGGER_ENABLED,
+    trustProxy: resolveTrustProxy(parsed.TRUST_PROXY),
   };
 };
