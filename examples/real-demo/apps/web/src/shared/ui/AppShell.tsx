@@ -102,7 +102,12 @@ export const AppShell = ({ children }: PropsWithChildren) => {
         <div className={styles.logoArea}>
           <NavLink to="/" className={styles.brandLink}>
             <span className={styles.brandIcon} aria-hidden="true">
-              ◆
+              <img
+                src={`${import.meta.env.BASE_URL}favicon.svg`}
+                alt=""
+                width={32}
+                height={32}
+              />
             </span>
             <span className={styles.brandText}>
               <span className={styles.brand}>
