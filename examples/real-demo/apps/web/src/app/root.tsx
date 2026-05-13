@@ -10,6 +10,7 @@ import {
   useRouteError,
 } from "react-router";
 
+import "@fontsource-variable/inter";
 import "@real-demo/ui/styles.css";
 import "../styles/global.css";
 

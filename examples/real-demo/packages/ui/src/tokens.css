@@ -10,16 +10,64 @@
   --color-text-primary: #0f172a;
   --color-text-secondary: #334155;
   --color-text-muted: #64748b;
-  --color-accent: #6366f1;
-  --color-accent-soft: rgba(99, 102, 241, 0.1);
-  --color-accent-strong: #4f46e5;
-  --color-accent-hover: #5558e6;
-  --color-accent-glow: rgba(99, 102, 241, 0.25);
-  --color-danger: #ef4444;
-  --color-danger-soft: rgba(239, 68, 68, 0.08);
-  --color-success: #10b981;
-  --color-success-soft: rgba(16, 185, 129, 0.1);
-  --color-warning: #f59e0b;
+  --color-text-inverse: #ffffff;
+
+  /*
+   * ── Semantic color channels (H S L) ──
+   * Consumers can compose arbitrary alpha tints via
+   * `hsl(var(--accent-h) var(--accent-s) var(--accent-l) / .12)` instead of
+   * maintaining N alpha tokens. Dark mode only flips `--*-l`, so semantic
+   * `--color-*-soft / -strong / -hover / -glow` stay derivation-driven.
+   */
+  --accent-h: 217;
+  --accent-s: 91%;
+  --accent-l: 60%;
+  --danger-h: 0;
+  --danger-s: 84%;
+  --danger-l: 60%;
+  --success-h: 160;
+  --success-s: 84%;
+  --success-l: 39%;
+  --warning-h: 38;
+  --warning-s: 92%;
+  --warning-l: 50%;
+
+  --color-accent: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
+  --color-accent-soft: hsl(
+    var(--accent-h) var(--accent-s) var(--accent-l) / 0.08
+  );
+  --color-accent-strong: hsl(
+    var(--accent-h) var(--accent-s) calc(var(--accent-l) - 7%)
+  );
+  --color-accent-hover: hsl(
+    var(--accent-h) var(--accent-s) calc(var(--accent-l) - 4%)
+  );
+  --color-accent-glow: hsl(
+    var(--accent-h) var(--accent-s) var(--accent-l) / 0.22
+  );
+  --color-danger: hsl(var(--danger-h) var(--danger-s) var(--danger-l));
+  --color-danger-soft: hsl(
+    var(--danger-h) var(--danger-s) var(--danger-l) / 0.08
+  );
+  --color-success: hsl(var(--success-h) var(--success-s) var(--success-l));
+  --color-success-soft: hsl(
+    var(--success-h) var(--success-s) var(--success-l) / 0.1
+  );
+  --color-warning: hsl(var(--warning-h) var(--warning-s) var(--warning-l));
+  --color-warning-soft: hsl(
+    var(--warning-h) var(--warning-s) var(--warning-l) / 0.1
+  );
+
+  /* ── Ambience: glow / glass ── */
+  --glow-primary: hsl(var(--accent-h) var(--accent-s) 70% / 0.35);
+  --glow-secondary: hsl(280 80% 70% / 0.2);
+  --glass-bg: color-mix(in srgb, var(--color-surface-raised) 82%, transparent);
+  --glass-border: color-mix(in srgb, var(--color-border-soft) 80%, transparent);
+  --glass-blur: 20px;
+  --glass-saturate: 180%;
+  --glass-highlight-strong: rgba(255, 255, 255, 0.5);
+  --glass-highlight-medium: rgba(255, 255, 255, 0.4);
+  --glass-highlight-soft: rgba(255, 255, 255, 0.18);
 
   /* ── Radii ── */
   --radius-sm: 0.5rem;
@@ -62,18 +110,20 @@
   /* ── Shadows ── */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07),
-    0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
-    0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08),
-    0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
   --shadow-glow: 0 0 0 3px var(--color-accent-soft);
   --shadow-ring: 0 0 0 1px var(--color-border-soft);
-  --shadow-card: 0 0 0 1px var(--color-border-subtle),
-    0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
-  --shadow-card-hover: 0 0 0 1px var(--color-border-soft),
-    0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card:
+    0 0 0 1px var(--color-border-subtle), 0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover:
+    0 0 0 1px var(--color-border-soft), 0 8px 24px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
 
   /* ── Transitions ── */
   --transition-fast: 150ms ease;
@@ -86,12 +136,26 @@
   --duration-float-md: 18s;
   --duration-spin: 0.7s;
 
-  /* ── Typography ── */
-  --font-family-base: "Inter", ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", sans-serif;
-  --font-family-heading: "Inter", ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", sans-serif;
-  --font-family-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  /* ── Typography ──
+   * Bilingual-ready stack:
+   *   Latin segment — Inter (self-hosted via `@fontsource-variable/inter` in
+   *   `apps/web/src/app/root.tsx`), falling back to system UI sans before Inter
+   *   is ready.
+   *   CJK segment — ordered by OS coverage (Mac/iOS → HMOS → Windows → Linux);
+   *   the browser auto-falls-through for CJK glyphs without polluting Latin
+   *   layout.
+   */
+  --font-family-base:
+    "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI",
+    "Microsoft YaHei", "Source Han Sans SC", "Noto Sans SC", sans-serif;
+  --font-family-heading:
+    "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI",
+    "Microsoft YaHei", "Source Han Sans SC", "Noto Sans SC", sans-serif;
+  --font-family-mono:
+    ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas,
+    "Liberation Mono", "DejaVu Sans Mono", monospace;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.8125rem;
   --font-size-md: 0.9375rem;
@@ -175,43 +239,104 @@
   --z-modal-content: 51;
 
   --color-overlay-backdrop: rgba(0, 0, 0, 0.45);
+
+  /*
+   * ── Avatar palette ──
+   * 8 hues evenly spaced around the wheel, consumed via `data-avatar-index`.
+   * Dark mode keeps the same hues and only lifts `--avatar-l` so text on
+   * coloured backgrounds stays legible.
+   */
+  --avatar-s: 70%;
+  --avatar-l: 55%;
+  --color-avatar-1: hsl(217 var(--avatar-s) var(--avatar-l));
+  --color-avatar-2: hsl(0 var(--avatar-s) var(--avatar-l));
+  --color-avatar-3: hsl(45 var(--avatar-s) var(--avatar-l));
+  --color-avatar-4: hsl(140 var(--avatar-s) var(--avatar-l));
+  --color-avatar-5: hsl(25 var(--avatar-s) var(--avatar-l));
+  --color-avatar-6: hsl(265 var(--avatar-s) var(--avatar-l));
+  --color-avatar-7: hsl(190 var(--avatar-s) var(--avatar-l));
+  --color-avatar-8: hsl(330 var(--avatar-s) var(--avatar-l));
 }
 
 /* ── Dark Mode ── */
 :root[data-theme="dark"] {
-  --color-bg-base: #0c0c0f;
-  --color-bg-alt: #111114;
-  --color-surface-raised: rgba(24, 24, 30, 0.85);
-  --color-surface-hover: rgba(35, 35, 44, 0.9);
-  --color-surface-glass: rgba(18, 18, 24, 0.7);
+  /* Bg leans slightly blue rather than neutral grey for a calmer night-read. */
+  --color-bg-base: #0f1218;
+  --color-bg-alt: #161a22;
+  --color-surface-raised: rgba(30, 35, 44, 0.85);
+  --color-surface-hover: rgba(42, 48, 59, 0.9);
+  --color-surface-glass: rgba(18, 22, 30, 0.7);
   --color-border-soft: rgba(255, 255, 255, 0.08);
   --color-border-subtle: rgba(255, 255, 255, 0.04);
   --color-text-primary: #f1f5f9;
   --color-text-secondary: #cbd5e1;
-  --color-text-muted: #94a3b8;
-  --color-accent: #818cf8;
-  --color-accent-soft: rgba(129, 140, 248, 0.15);
-  --color-accent-strong: #a5b4fc;
-  --color-accent-hover: #7c83f4;
-  --color-accent-glow: rgba(129, 140, 248, 0.2);
-  --color-danger: #fca5a5;
-  --color-danger-soft: rgba(252, 165, 165, 0.1);
-  --color-success: #6ee7b7;
-  --color-success-soft: rgba(110, 231, 183, 0.1);
-  --color-warning: #fcd34d;
+  --color-text-muted: #a3b0c2;
+  --color-text-inverse: #ffffff;
+
+  /*
+   * Only the L (lightness) channel flips between modes; H/S stay shared so
+   * `hsl(var(--*-h) var(--*-s) var(--*-l) / X)` resolves to a sensible value
+   * in both themes without per-mode duplication.
+   */
+  --accent-l: 70%;
+  --danger-l: 72%;
+  --success-l: 67%;
+  --warning-l: 66%;
+
+  --color-accent-soft: hsl(
+    var(--accent-h) var(--accent-s) var(--accent-l) / 0.12
+  );
+  --color-accent-strong: hsl(
+    var(--accent-h) var(--accent-s) calc(var(--accent-l) + 10%)
+  );
+  --color-accent-hover: hsl(
+    var(--accent-h) var(--accent-s) calc(var(--accent-l) - 5%)
+  );
+  --color-accent-glow: hsl(
+    var(--accent-h) var(--accent-s) var(--accent-l) / 0.18
+  );
+  --color-danger-soft: hsl(
+    var(--danger-h) var(--danger-s) var(--danger-l) / 0.1
+  );
+  --color-success-soft: hsl(
+    var(--success-h) var(--success-s) var(--success-l) / 0.1
+  );
+  --color-warning-soft: hsl(
+    var(--warning-h) var(--warning-s) var(--warning-l) / 0.1
+  );
+  --glow-primary: hsl(var(--accent-h) var(--accent-s) 72% / 0.22);
+  --glow-secondary: hsl(280 80% 74% / 0.14);
+  --glass-bg: color-mix(in srgb, var(--color-surface-raised) 78%, transparent);
+  --glass-border: color-mix(in srgb, var(--color-border-soft) 85%, transparent);
+  --glass-highlight-strong: rgba(255, 255, 255, 0.08);
+  --glass-highlight-medium: rgba(255, 255, 255, 0.06);
+  --glass-highlight-soft: rgba(255, 255, 255, 0.05);
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4),
-    0 2px 4px -2px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45),
-    0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
-    0 8px 10px -6px rgba(0, 0, 0, 0.35);
-  --shadow-card: 0 0 0 1px var(--color-border-subtle),
-    0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-card-hover: 0 0 0 1px var(--color-border-soft),
-    0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.25);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.35);
+  /*
+   * Dark surfaces need an inset 1px top highlight, otherwise the card sinks
+   * into the bg and loses edge separation. Drop shadow goes one stop deeper
+   * to compensate for the dimmer page bg.
+   */
+  --shadow-card:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px var(--color-border-subtle), 0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px var(--color-border-soft), 0 12px 28px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.25);
 
   --color-overlay-backdrop: rgba(0, 0, 0, 0.6);
+
+  /* Lift avatar lightness so coloured chips don't fuse with the dark panel. */
+  --avatar-s: 65%;
+  --avatar-l: 62%;
 }

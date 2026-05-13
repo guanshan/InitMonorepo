@@ -22,31 +22,29 @@
     transform var(--transition-fast);
 }
 
-.ui-button:hover {
-  box-shadow: var(--shadow-sm);
-}
-
 .ui-button:active {
   transform: scale(0.98);
-  box-shadow: none;
 }
 
 .ui-button:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
 }
 
 .ui-button[data-variant="primary"] {
   background: var(--color-accent);
-  color: white;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1),
+  color: var(--color-text-inverse);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .ui-button[data-variant="primary"]:hover {
   background: var(--color-accent-hover);
-  box-shadow: 0 4px 12px var(--color-accent-glow),
+  box-shadow:
+    0 6px 16px var(--color-accent-glow),
     0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(var(--motion-lift-xs));
 }
 
 .ui-button[data-variant="secondary"] {
@@ -55,8 +53,13 @@
   border: var(--border-width-default) solid var(--color-border-soft);
 }
 
+/*
+ * Ghost / secondary hovers use a "8% text-color overlay" that resolves
+ * differently in light vs dark mode without duplicate rules.
+ */
 .ui-button[data-variant="secondary"]:hover {
-  background: var(--color-surface-hover);
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
 }
 
 .ui-button[data-variant="ghost"] {
@@ -65,7 +68,7 @@
 }
 
 .ui-button[data-variant="ghost"]:hover {
-  background: var(--color-surface-raised);
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   color: var(--color-text-primary);
 }
 
@@ -75,6 +78,7 @@
   border: var(--border-width-default) solid var(--color-border-soft);
   border-radius: var(--radius-xl);
   padding: var(--space-5);
+  box-shadow: var(--shadow-card);
   transition:
     box-shadow var(--transition-base),
     border-color var(--transition-base),
@@ -84,6 +88,7 @@
 .ui-card:hover {
   box-shadow: var(--shadow-card-hover);
   border-color: transparent;
+  transform: translateY(var(--motion-lift-xs));
 }
 
 /* --- InlineStat --- */
@@ -123,7 +128,15 @@
 .ui-input:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+.ui-input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.ui-input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px var(--color-danger-soft);
 }
 
 .ui-input::placeholder {
@@ -162,12 +175,20 @@
 }
 
 .ui-table tbody tr:hover {
-  background: var(--color-surface-hover);
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
 }
 
-/* --- Tag --- */
+/*
+ * --- Tag / Status Badge ---
+ *
+ * Unified pattern: `hsl(var(--X-h) var(--X-s) var(--X-l) / .12)` background +
+ * matching text colour + 25% border. Contrast holds in both light and dark
+ * modes, so no per-mode override is required.
+ */
 .ui-tag {
   background: var(--color-accent-soft);
+  border: var(--border-width-default) solid
+    hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.25);
   border-radius: var(--radius-pill);
   color: var(--color-accent-strong);
   display: inline-flex;
@@ -177,6 +198,30 @@
   letter-spacing: var(--letter-spacing-tag);
   padding: 2px var(--space-2);
   white-space: nowrap;
+}
+
+.ui-tag[data-variant="success"] {
+  background: var(--color-success-soft);
+  border-color: hsl(var(--success-h) var(--success-s) var(--success-l) / 0.25);
+  color: var(--color-success);
+}
+
+.ui-tag[data-variant="warning"] {
+  background: var(--color-warning-soft);
+  border-color: hsl(var(--warning-h) var(--warning-s) var(--warning-l) / 0.25);
+  color: var(--color-warning);
+}
+
+.ui-tag[data-variant="danger"] {
+  background: var(--color-danger-soft);
+  border-color: hsl(var(--danger-h) var(--danger-s) var(--danger-l) / 0.25);
+  color: var(--color-danger);
+}
+
+.ui-tag[data-variant="neutral"] {
+  background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-text-muted) 25%, transparent);
+  color: var(--color-text-secondary);
 }
 
 /* --- Spinner --- */
@@ -239,15 +284,32 @@
   max-width: 36ch;
 }
 
+/*
+ * --- Glass surface utility ---
+ * Drop-in helper for hero cards, command palettes, sticky headers, etc.
+ * Pair with a parent that has visible background so the blur actually picks
+ * something up.
+ */
+.ui-glass-surface {
+  background: var(--glass-bg);
+  border: var(--border-width-default) solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur))
+    saturate(var(--glass-saturate));
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight-soft),
+    var(--shadow-md);
+}
+
 /* --- Modal (Radix Dialog) --- */
 .ui-modal-overlay {
   background: var(--color-overlay-backdrop);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   inset: 0;
   position: fixed;
   z-index: var(--z-modal-overlay);
-  animation: ui-fade-in var(--transition-fast);
+  animation: ui-fade-in var(--transition-base) ease-out;
 }
 
 .ui-modal-content {
@@ -265,7 +327,7 @@
   transform: translate(-50%, var(--motion-modal-rest-y));
   width: calc(100% - var(--space-8));
   z-index: var(--z-modal-content);
-  animation: ui-scale-in var(--transition-base);
+  animation: ui-scale-in var(--transition-spring);
 }
 
 .ui-modal-title {
@@ -297,7 +359,7 @@
 }
 
 .ui-modal-close:hover {
-  background: var(--color-surface-hover);
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   color: var(--color-text-primary);
 }
 

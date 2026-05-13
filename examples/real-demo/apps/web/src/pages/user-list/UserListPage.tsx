@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 
 import { defaultUsersQuery, useUsers } from "../../entities/user/api";
+import { getAvatarIndex } from "../../shared/lib/avatar-hue";
 import { getUserFacingErrorMessage } from "../../shared/lib/user-facing-error";
 import { EmptyState } from "../../shared/ui/EmptyState";
 import { ErrorState } from "../../shared/ui/ErrorState";
@@ -114,7 +115,7 @@ export const UserListPage = () => {
         </Link>
       </div>
 
-      <div className={styles.paginationSummary}>
+      <div className={`${styles.paginationSummary} tnum`}>
         <p>
           {t("users.pagination.summary", {
             end: endItem,
@@ -134,7 +135,12 @@ export const UserListPage = () => {
         {visibleUsers.map((user) => (
           <article className={styles.card} key={user.id}>
             <div className={styles.cardTop}>
-              <div className={styles.avatar}>{user.initial}</div>
+              <div
+                className={styles.avatar}
+                data-avatar-index={getAvatarIndex(user.id)}
+              >
+                {user.initial}
+              </div>
               <div className={styles.cardHeader}>
                 <h2>{user.name}</h2>
                 <span>{t(`roles.${user.role}`)}</span>

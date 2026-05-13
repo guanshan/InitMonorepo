@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 
 import { useUserById } from "../../entities/user/api";
+import { getAvatarIndex } from "../../shared/lib/avatar-hue";
 import { getUserFacingErrorMessage } from "../../shared/lib/user-facing-error";
 import { ErrorState } from "../../shared/ui/ErrorState";
 import { LoadingState } from "../../shared/ui/LoadingState";
@@ -37,7 +38,10 @@ export const UserDetailPage = () => {
     <section className={styles.wrapper}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <div className={styles.avatar}>
+          <div
+            className={styles.avatar}
+            data-avatar-index={getAvatarIndex(userQuery.data.id)}
+          >
             {userQuery.data.initial}
           </div>
           <div>

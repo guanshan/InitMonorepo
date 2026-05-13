@@ -97,14 +97,23 @@ export const Table = ({
 /* Tag                                                                        */
 /* ========================================================================= */
 
-export type TagProps = HTMLAttributes<HTMLSpanElement>;
+export type TagVariant = "accent" | "success" | "warning" | "danger" | "neutral";
+
+export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
+  variant?: TagVariant;
+}
 
 export const Tag = ({
   children,
   className = "",
+  variant = "accent",
   ...props
 }: PropsWithChildren<TagProps>) => (
-  <span className={`ui-tag ${className}`.trim()} {...props}>
+  <span
+    className={`ui-tag ${className}`.trim()}
+    {...(variant === "accent" ? {} : { "data-variant": variant })}
+    {...props}
+  >
     {children}
   </span>
 );

@@ -1,15 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap");
+/*
+ * Inter is self-hosted via `@fontsource-variable/inter`, imported from
+ * `apps/web/src/app/root.tsx`. We no longer @import the Google Fonts CDN,
+ * which used to block the cold-start style tree on networks where Google
+ * Fonts is slow/blocked (e.g. CN).
+ *
+ * JetBrains Mono is intentionally not loaded — `--font-family-mono` falls
+ * through to the system mono stack instead.
+ */
 
 :root {
   background: var(--color-bg-base);
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       ellipse 80% 60% at 40% 0%,
-      color-mix(in srgb, var(--color-accent) 5%, transparent),
+      hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.06),
       transparent
     ),
     radial-gradient(
       ellipse 60% 50% at 95% 5%,
-      color-mix(in srgb, var(--color-success) 4%, transparent),
+      hsl(var(--success-h) var(--success-s) var(--success-l) / 0.04),
       transparent
     );
   background-attachment: fixed;
@@ -19,7 +28,47 @@
   line-height: var(--line-height-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  /*
+   * Inter OpenType features:
+   *   cv02/cv03/cv04/cv11 — character variants (single-storey a, tailed l, …)
+   *                         improve mixed-script (Latin + CJK) legibility.
+   *   zero                — slashed 0, separates 0 / O for IDs, codes, OTPs.
+   * Data-dense areas additionally opt-in to `tabular-nums` via the `.tnum`
+   * utility — we don't enable it globally so prose numbers stay proportional.
+   */
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "zero";
+  /*
+   * Fallback fonts auto-scale to Inter's x-height, flattening baseline jitter
+   * when Latin and CJK runs sit on the same line. Safari ≤ 16.3 ignores.
+   */
+  font-size-adjust: from-font;
+}
+
+/*
+ * One ultra-light noise layer over the whole page kills the "plastic" feel
+ * of large flat colours, especially in dark mode. Opacity 0.02 is below the
+ * perception threshold for content — only visible across wide colour fields.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: multiply;
+}
+
+:root[data-theme="dark"] body::before {
+  opacity: 0.035;
+  mix-blend-mode: screen;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: var(--size-viewport-height);
 }
 
 html {
@@ -37,6 +86,7 @@ body {
 
 a {
   color: inherit;
+  transition: color var(--transition-fast);
 }
 
 h1,
@@ -58,23 +108,37 @@ h2 {
   letter-spacing: var(--letter-spacing-heading);
 }
 
-#root {
-  min-height: var(--size-viewport-height);
-}
-
 /* --- Selection --- */
 ::selection {
-  background: var(--color-accent-soft);
+  background: hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 0.18);
   color: var(--color-text-primary);
 }
 
-/* --- Focus ring --- */
+/*
+ * --- Focus ring ---
+ * Only appears under keyboard navigation. Solid 2px outline + 4px glow halo
+ * replaces the raw browser outline that always looked too sharp.
+ */
 :focus-visible {
   outline: var(--outline-width-focus) solid var(--color-accent);
   outline-offset: var(--offset-focus);
+  box-shadow: 0 0 0 4px var(--color-accent-glow);
 }
 
-/* --- Smooth page transitions --- */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/*
+ * --- Animation vocabulary ---
+ *
+ * Pick a class, don't write @keyframes inline. House rules:
+ *   - List / card entry:           `animate-fade-in-up`
+ *   - Modal / Popover / Toast:     `animate-fade-in-scale`
+ *   - Skeleton / progress bar:     `animate-shimmer`
+ *   - "Live / in-progress" badges: `animate-breathe` or `animate-glow-pulse`
+ *   - Aurora / float decorations:  kept local to opt-in surfaces only.
+ */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -86,13 +150,123 @@ h2 {
   }
 }
 
-.animate-in {
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(var(--motion-scale-breathe));
+    opacity: 1;
+  }
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--color-accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+.animate-in,
+.animate-fade-in-up {
   animation: fadeInUp var(--transition-slow) both;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale var(--transition-base) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--transition-base) both;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent-soft),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.animate-breathe {
+  animation: breathe var(--duration-breathe) ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse var(--duration-pulse) ease-in-out infinite;
+}
+
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+/*
+ * --- Tabular numerals ---
+ * Data-dense surfaces (counts, amounts, ID columns, "x/N" progress) opt-in
+ * to monospaced digits so figures stop jittering between rows. Don't write
+ * `font-variant-numeric: tabular-nums` directly — funnel through this
+ * utility so the choice stays auditable.
+ */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings:
+    "tnum" 1,
+    "cv02",
+    "cv03",
+    "cv04",
+    "cv11",
+    "zero";
 }
 
 /* --- Scrollbar --- */
 ::-webkit-scrollbar {
   width: var(--size-scrollbar);
+  height: var(--size-scrollbar);
 }
 
 ::-webkit-scrollbar-track {
@@ -100,15 +274,34 @@ h2 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-soft);
+  background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
   border-radius: var(--radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-text-muted) 55%, transparent);
 }
 
-/* --- Smooth link transitions --- */
-a {
-  transition: color var(--transition-fast);
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-text-muted) 35%, transparent)
+    transparent;
+}
+
+/*
+ * --- Reduced motion ---
+ * Clamp animations and transitions to ~0ms when the user enables OS-level
+ * reduced motion. Preserves functional state changes (no `display: none`),
+ * just removes the vestibular discomfort vector.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
