@@ -1,19 +1,6 @@
 /**
- * Convenience entry point — re-exports the base client and types.
- * For subpath imports, use "@real-demo/sdk/types" or "@real-demo/sdk/react".
+ * Demo SDK surface. The user CRUD endpoints are gone, so the previous
+ * Orval-generated client/hooks are too — run `pnpm codegen` to regenerate
+ * once the server exposes new endpoints worth typing.
  */
-export * from "./generated/model";
-export { ApiRequestError } from "./runtime/fetcher";
-export {
-  listUsers,
-  getUserById,
-  createUser,
-  getListUsersUrl,
-  getGetUserByIdUrl,
-  getCreateUserUrl,
-} from "./generated/client";
-export type {
-  listUsersResponse,
-  getUserByIdResponse,
-  createUserResponse,
-} from "./generated/client";
+export { ApiRequestError, customFetcher } from "./runtime/fetcher";

@@ -2,14 +2,30 @@ SHELL := /bin/bash
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup infra-up infra-down dev dev-web dev-server build lint typecheck test knip check openapi generate generate-sdk db-migrate db-seed db-reset db-studio db\:migrate db\:seed db\:reset db\:studio clean docker-build docker-run
+.PHONY: help setup infra-up infra-down dev dev-web dev-server build lint typecheck test knip check outdated upgrade openapi generate generate-sdk db-migrate db-seed db-reset db-studio clean docker-build docker-run
 
 help: ## Show available commands
 	@awk 'BEGIN {FS = " ## "; printf "\nTargets:\n"} /^[a-zA-Z0-9_:\\.-]+:.*## / { target = $$1; gsub(/\\/, "", target); sub(/:[^:]*$$/, "", target); printf "  %-18s %s\n", target, $$2 }' $(MAKEFILE_LIST)
 
-setup: ## Install dependencies and bootstrap local development
-	@if [ ! -f apps/server/.env ]; then cp apps/server/.env.example apps/server/.env; fi
-	@if [ ! -f apps/web/.env ]; then cp apps/web/.env.example apps/web/.env; fi
+setup: ## One-time bootstrap: copy .env files, install deps, start infra, migrate & seed
+	@server_env_created=0; web_env_created=0; \
+	if [ ! -f apps/server/.env ]; then cp apps/server/.env.example apps/server/.env; server_env_created=1; fi; \
+	if [ ! -f apps/web/.env ]; then cp apps/web/.env.example apps/web/.env; web_env_created=1; fi; \
+	if [ "$$server_env_created" = "1" ] || [ "$$web_env_created" = "1" ]; then \
+	  echo ""; \
+	  echo "  Created fresh .env file(s) from .env.example."; \
+	  echo "  Defaults assume the bundled Docker stack (localhost:13306 / localhost:16379)."; \
+	  echo "  To use a remote MySQL/Redis instead, edit:"; \
+	  [ "$$server_env_created" = "1" ] && echo "    apps/server/.env  (DATABASE_URL, REDIS_URL)"; \
+	  [ "$$web_env_created" = "1" ]    && echo "    apps/web/.env"; \
+	  echo "  Local infra is auto-skipped when DATABASE_URL/REDIS_URL point to a remote host."; \
+	  if [ -t 0 ]; then \
+	    echo ""; \
+	    read -r -p "  Press Enter to continue, or Ctrl+C to stop and edit first... " _; \
+	  else \
+	    echo "  (non-interactive shell -- continuing without pause)"; \
+	  fi; \
+	fi
 	corepack enable
 	./scripts/infra-up.sh
 	pnpm install
@@ -32,12 +48,11 @@ generate: generate-sdk ## Backward-compatible alias for SDK generation
 generate-sdk: ## Regenerate the SDK from OpenAPI
 	pnpm generate-sdk
 
-dev: ## Start the full stack in development mode
-	@if [ ! -f apps/server/.env ]; then cp apps/server/.env.example apps/server/.env; fi
-	@if [ ! -f apps/web/.env ]; then cp apps/web/.env.example apps/web/.env; fi
-	./scripts/infra-up.sh
-	pnpm generate-sdk
-	pnpm build:packages
+dev: ## Start the full stack in development mode (assumes 'make setup' has run)
+	@if [ ! -f apps/server/.env ] || [ ! -f apps/web/.env ]; then \
+	  echo "Missing .env file. Run 'make setup' first to bootstrap local development."; \
+	  exit 1; \
+	fi
 	pnpm db:migrate
 	pnpm dev
 
@@ -45,7 +60,6 @@ dev-web: ## Start only the frontend dev server
 	pnpm dev:web
 
 dev-server: ## Start only the backend dev server
-	./scripts/infra-up.sh
 	pnpm db:migrate
 	pnpm dev:server
 
@@ -67,6 +81,19 @@ knip: ## Check for unused files, exports, and dependencies
 check: ## Run the full local verification chain
 	pnpm check
 
+outdated: ## List outdated dependencies across the workspace
+	@pnpm outdated -r; status=$$?; \
+	if [ $$status -eq 1 ]; then \
+		exit 0; \
+	fi; \
+	exit $$status
+
+upgrade: ## Safely upgrade all dependencies within current semver ranges (patch + minor)
+	pnpm update -r
+	@# Rehydrate workspace manifests so a follow-up `make outdated` doesn't trip
+	@# pnpm/pnpm#2313 ("Cannot read properties of undefined (reading 'optionalDependencies')").
+	pnpm install
+
 db-migrate: ## Apply committed database migrations for local development
 	pnpm db:migrate
 
@@ -77,18 +104,6 @@ db-reset: ## Reset and reseed the local database
 	pnpm db:reset
 
 db-studio: ## Launch Prisma Studio
-	pnpm db:studio
-
-db\:migrate:
-	pnpm db:migrate
-
-db\:seed:
-	pnpm db:seed
-
-db\:reset:
-	pnpm db:reset
-
-db\:studio:
 	pnpm db:studio
 
 clean: ## Remove generated build artifacts

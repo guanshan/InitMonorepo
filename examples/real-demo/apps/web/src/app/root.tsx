@@ -16,8 +16,9 @@ import "../styles/global.css";
 
 import { defaultMeta } from "./route-meta";
 import { AppProviders } from "./providers/AppProviders";
-import { ErrorBoundary as AppErrorBoundary } from "../shared/ui/ErrorBoundary";
 import { AppShell } from "../shared/ui/AppShell";
+import { AuthGate } from "../shared/ui/AuthGate";
+import { ErrorBoundary as AppErrorBoundary } from "../shared/ui/ErrorBoundary";
 import { ErrorState } from "../shared/ui/ErrorState";
 import { LoadingState } from "../shared/ui/LoadingState";
 import { environment } from "../shared/config/env";
@@ -45,7 +46,9 @@ const renderDocument = (content: ReactNode) => (
     <body>
       <AppProviders>
         <AppErrorBoundary>
-          <AppShell>{content}</AppShell>
+          <AppShell>
+            <AuthGate>{content}</AuthGate>
+          </AppShell>
         </AppErrorBoundary>
       </AppProviders>
       <ScrollRestoration />

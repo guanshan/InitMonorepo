@@ -4,20 +4,69 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
+  SUPER_ADMIN
   ADMIN
-  MEMBER
-  SUPPORT
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  role      UserRole @default(MEMBER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int        @id @default(autoincrement())
+  userId        String     @unique @default(cuid()) @map("user_id")
+  name          String
+  email         String     @unique
+  emailVerified Boolean    @default(false) @map("email_verified")
+  image         String     @default("") @db.VarChar(512)
+  username      String     @default("")
+  role          UserRole   @default(USER)
+  department    Json       @default("[]")
+  status        UserStatus @default(ACTIVE)
+  lastLogin     DateTime?  @map("last_login")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  sessions Session[]
+  accounts Account[]
+
+  @@map("user")
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique @map("token_hash") @db.VarChar(64)
+  expiresAt DateTime @map("expires_at")
+  ipAddress String   @default("") @map("ip_address") @db.VarChar(64)
+  userAgent String   @default("") @map("user_agent") @db.VarChar(512)
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id         Int      @id @default(autoincrement())
+  accountId  String   @map("account_id") @db.VarChar(255)
+  providerId String   @map("provider_id") @db.VarChar(128)
+  userId     Int      @map("user_id")
+  password   String?  @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, providerId], name: "account_account_provider_uk")
+  @@index([userId])
+  @@map("account")
 }

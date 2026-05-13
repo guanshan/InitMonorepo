@@ -4,14 +4,8 @@ export const cacheKeys = {
   auth: {
     sessionById: (sessionId: string) =>
       `auth:session:${encodeCacheSegment(sessionId)}`,
-  },
-  entity: {
-    userById: (userId: string) => `entity:user:${encodeCacheSegment(userId)}`,
-  },
-  query: {
-    usersListPage: (version: number, page: number, pageSize: number) =>
-      `query:users:list:v${version}:page:${page}:page-size:${pageSize}`,
-    usersListVersion: () => "query:users:list:version",
+    captchaById: (captchaId: string) =>
+      `auth:captcha:${encodeCacheSegment(captchaId)}`,
   },
   rateLimit: {
     byIp: (ipAddress: string) =>

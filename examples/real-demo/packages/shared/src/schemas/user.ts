@@ -1,49 +1,88 @@
 import { z } from "zod";
 
-import {
-  createApiPaginatedSchema,
-  createApiSuccessSchema,
-} from "../contracts/api-envelope.js";
+import { createApiSuccessSchema } from "../contracts/api-envelope.js";
 
-export const UserRoleSchema = z.enum(["ADMIN", "MEMBER", "SUPPORT"]);
+export const UserRoleSchema = z.enum(["SUPER_ADMIN", "ADMIN", "USER"]);
+export const UserStatusSchema = z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]);
+export const UserRoleSourceSchema = z.enum(["base", "direct", "department"]);
 
-export const UserSchema = z
+export const SessionUserSchema = z
   .object({
-    id: z.string().min(1),
-    name: z.string().min(2).max(60),
+    userId: z.string().min(1),
+    name: z.string(),
     email: z.string().email(),
+    username: z.string(),
     role: UserRoleSchema,
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
+    baseRole: UserRoleSchema,
+    roleSource: UserRoleSourceSchema,
+    department: z.array(z.string()),
+    status: UserStatusSchema,
+    image: z.string(),
   })
   .strict();
 
-export const CreateUserInputSchema = z
+export const SignInInputSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(1, "validation.name.required")
-      .min(2, "validation.name.min")
-      .max(60, "validation.name.max"),
     email: z
       .string()
       .trim()
       .min(1, "validation.email.required")
       .email("validation.email.invalid"),
-    role: UserRoleSchema.default("MEMBER"),
+    password: z.string().min(1, "validation.password.required"),
+    captchaId: z.string().min(1, "validation.captcha.required"),
+    captchaAnswer: z
+      .string()
+      .trim()
+      .min(1, "validation.captcha.required")
+      .max(16, "validation.captcha.invalid"),
   })
   .strict();
 
-export const ListUsersQuerySchema = z
+export const CaptchaChallengeSchema = z
   .object({
-    page: z.coerce.number().int().min(1).default(1),
-    pageSize: z.coerce.number().int().min(1).max(100).default(20),
+    captchaId: z.string().min(1),
+    svg: z.string().min(1),
   })
   .strict();
 
-export const UserListSchema = z.array(UserSchema);
+export const ChangePasswordInputSchema = z
+  .object({
+    currentPassword: z.string().min(1, "validation.password.required"),
+    newPassword: z.string().min(8, "validation.password.tooShort"),
+  })
+  .strict();
 
-export const UserListResponseSchema = createApiPaginatedSchema(UserSchema);
-export const UserDetailResponseSchema = createApiSuccessSchema(UserSchema);
-export const CreateUserResponseSchema = createApiSuccessSchema(UserSchema);
+export const AuthStateSchema = z
+  .object({
+    authenticated: z.boolean(),
+  })
+  .strict();
+
+export const IoaStatusSchema = z.object({ enabled: z.boolean() }).strict();
+
+export const DevAccountSchema = z
+  .object({
+    role: UserRoleSchema,
+    email: z.string().email(),
+    password: z.string().min(1),
+  })
+  .strict();
+
+export const DevAccountsListSchema = z
+  .object({
+    accounts: z.array(DevAccountSchema),
+  })
+  .strict();
+
+export const SessionUserResponseSchema =
+  createApiSuccessSchema(SessionUserSchema);
+export const AuthStateResponseSchema = createApiSuccessSchema(AuthStateSchema);
+export const CaptchaChallengeResponseSchema = createApiSuccessSchema(
+  CaptchaChallengeSchema,
+);
+export const IoaStatusResponseSchema = createApiSuccessSchema(IoaStatusSchema);
+export const DevAccountsResponseSchema =
+  createApiSuccessSchema(DevAccountsListSchema);
+export const ChangePasswordResponseSchema = createApiSuccessSchema(
+  z.object({ changed: z.boolean() }).strict(),
+);

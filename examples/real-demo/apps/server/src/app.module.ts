@@ -8,8 +8,8 @@ import { getLogAction, getLogModule } from "./common/http/log-context";
 import { getOrCreateRequestId } from "./common/http/request-id";
 import { CacheModule } from "./infrastructure/cache/cache.module";
 import { PrismaModule } from "./infrastructure/prisma/prisma.module";
+import { AuthModule } from "./modules/auth/auth.module";
 import { HealthModule } from "./modules/health/health.module";
-import { UsersModule } from "./modules/users/users.module";
 
 @Module({
   imports: [
@@ -48,7 +48,7 @@ import { UsersModule } from "./modules/users/users.module";
     PrismaModule,
     CacheModule,
     HealthModule,
-    UsersModule,
+    AuthModule,
   ],
   providers: [
     {

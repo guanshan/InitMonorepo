@@ -1,0 +1,123 @@
+.menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+  background: var(--glass-bg);
+  border: var(--border-width-default) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-1-5);
+  z-index: var(--z-modal-content);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  min-width: 224px;
+  display: flex;
+  flex-direction: column;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+  font-family: inherit;
+}
+
+.menuItem:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.menuItem:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.menuItem.danger {
+  color: var(--color-danger, #c0392b);
+}
+
+.menuItem.danger:hover:not(:disabled) {
+  background: var(--color-danger-soft, rgba(192, 57, 43, 0.08));
+}
+
+.menuItemIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.menuItemLabel {
+  flex: 1;
+}
+
+.menuItemChevron {
+  font-size: 11px;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.separator {
+  height: 1px;
+  background: var(--color-border-soft);
+  margin: var(--space-1-5) var(--space-2);
+}
+
+.subMenu {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 0 var(--space-4);
+}
+
+.subMenuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-1-5) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+  font-family: inherit;
+}
+
+.subMenuItem:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.subMenuIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.checkMark {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: var(--color-accent);
+}

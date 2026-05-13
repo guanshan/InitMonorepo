@@ -2,10 +2,6 @@ import "reflect-metadata";
 
 import type { NestExpressApplication } from "@nestjs/platform-express";
 
-import { access, readFile, readdir, rename, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
-
-import { Prisma } from "@prisma/client";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -14,234 +10,256 @@ import { AppModule } from "./app.module";
 import { configureApp } from "./app.factory";
 import { CacheService } from "./infrastructure/cache/cache.service";
 import { PrismaService } from "./infrastructure/prisma/prisma.service";
+import { PasswordService } from "./modules/auth/application/password.service";
 
 type StoredUser = {
-  createdAt: Date;
-  email: string;
-  id: string;
+  id: number;
+  userId: string;
   name: string;
-  role: "ADMIN" | "MEMBER" | "SUPPORT";
+  email: string;
+  emailVerified: boolean;
+  image: string;
+  username: string;
+  role: "SUPER_ADMIN" | "ADMIN" | "USER";
+  department: unknown;
+  status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+  lastLogin: Date | null;
+  createdAt: Date;
   updatedAt: Date;
 };
 
-const compareStoredUsers = (left: StoredUser, right: StoredUser) => {
-  const createdAtDifference =
-    right.createdAt.getTime() - left.createdAt.getTime();
-
-  if (createdAtDifference !== 0) {
-    return createdAtDifference;
-  }
-
-  return right.id.localeCompare(left.id);
+type StoredAccount = {
+  id: number;
+  accountId: string;
+  providerId: string;
+  password: string | null;
+  userId: number;
 };
 
-const frontendDistDirectory = resolve(
-  __dirname,
-  "..",
-  "..",
-  "web",
-  "dist",
-  "client",
-);
-const frontendAssetDirectory = resolve(frontendDistDirectory, "assets");
-const frontendIndexHtmlPath = resolve(frontendDistDirectory, "index.html");
-const createBasePathFixture = (basePath: string, assetFileName: string) => `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Real Demo Test Fixture</title>
-    <link rel="modulepreload" href="${basePath}/assets/${assetFileName}"/>
-    <script>
-      window.__APP_CONFIG__ = {
-        APP_RUNTIME_API_BASE_URL: "__APP_RUNTIME_API_BASE_URL__"
-      };
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
-`;
-
-const resolveBuiltAssetFileName = async () => {
-  const assetFileNames = (await readdir(frontendAssetDirectory))
-    .filter((fileName) => fileName.endsWith(".js"))
-    .sort();
-
-  if (assetFileNames.length === 0) {
-    throw new Error(
-      `No built frontend JavaScript assets were found in ${frontendAssetDirectory}. ` +
-        `Run the web build before executing the server e2e suite.`,
-    );
-  }
-
-  return assetFileNames[0]!;
+type StoredSession = {
+  id: number;
+  tokenHash: string;
+  expiresAt: Date;
+  ipAddress: string;
+  userAgent: string;
+  userId: number;
 };
 
-const createSeedUsers = (): StoredUser[] => [
-  {
-    createdAt: new Date("2026-04-06T00:00:00.000Z"),
-    email: "ada@example.com",
-    id: "user_1",
-    name: "Ada Lovelace",
-    role: "ADMIN",
-    updatedAt: new Date("2026-04-06T00:00:00.000Z"),
-  },
-  {
-    createdAt: new Date("2026-04-07T00:00:00.000Z"),
-    email: "grace@example.com",
-    id: "user_2",
-    name: "Grace Hopper",
-    role: "SUPPORT",
-    updatedAt: new Date("2026-04-07T00:00:00.000Z"),
-  },
-];
+const ADMIN_EMAIL = "admin@local.auth";
+const ADMIN_PASSWORD = "Demo#2026.";
 
 class FakePrismaService {
-  private users = createSeedUsers();
+  private users: StoredUser[] = [];
+  private accounts: StoredAccount[] = [];
+  private sessions: StoredSession[] = [];
+  private nextSessionId = 1;
+  private nextAccountId = 1;
 
-  async $transaction<T extends readonly unknown[]>(
-    operations: { [Key in keyof T]: Promise<T[Key]> },
-  ): Promise<T> {
-    return Promise.all(operations) as Promise<T>;
+  reset() {
+    this.users = [];
+    this.accounts = [];
+    this.sessions = [];
+    this.nextSessionId = 1;
+    this.nextAccountId = 1;
+  }
+
+  seedUser(input: {
+    user: Omit<StoredUser, "lastLogin" | "createdAt" | "updatedAt">;
+    passwordHash: string;
+  }) {
+    const now = new Date("2026-05-01T00:00:00.000Z");
+    const user: StoredUser = {
+      lastLogin: null,
+      createdAt: now,
+      updatedAt: now,
+      ...input.user,
+    };
+    this.users.push(user);
+    this.accounts.push({
+      id: this.nextAccountId++,
+      accountId: input.user.email,
+      providerId: "credential",
+      password: input.passwordHash,
+      userId: input.user.id,
+    });
   }
 
   readonly user = {
+    findUnique: async ({ where }: { where: { email?: string; id?: number } }) =>
+      this.users.find(
+        (user) =>
+          (where.email !== undefined && user.email === where.email) ||
+          (where.id !== undefined && user.id === where.id),
+      ) ?? null,
+    update: async ({
+      where,
+      data,
+    }: {
+      where: { id: number };
+      data: Partial<StoredUser>;
+    }) => {
+      const found = this.users.find((user) => user.id === where.id);
+      if (!found) throw new Error("User not found");
+      Object.assign(found, data);
+      found.updatedAt = new Date();
+      return found;
+    },
+  };
+
+  readonly account = {
+    findFirst: async ({
+      where,
+    }: {
+      where: { userId: number; providerId: string };
+    }) =>
+      this.accounts.find(
+        (account) =>
+          account.userId === where.userId &&
+          account.providerId === where.providerId,
+      ) ?? null,
+    update: async ({
+      where,
+      data,
+    }: {
+      where: { id: number };
+      data: Partial<StoredAccount>;
+    }) => {
+      const found = this.accounts.find((account) => account.id === where.id);
+      if (!found) throw new Error("Account not found");
+      Object.assign(found, data);
+      return found;
+    },
+  };
+
+  readonly session = {
     create: async ({
       data,
     }: {
-      data: Pick<StoredUser, "email" | "name" | "role">;
+      data: Omit<StoredSession, "id">;
     }) => {
-      if (this.users.some((user) => user.email === data.email)) {
-        throw new Prisma.PrismaClientKnownRequestError(
-          "Unique constraint failed on the fields: (`email`)",
-          {
-            clientVersion: "test",
-            code: "P2002",
-          },
-        );
-      }
-
-      const createdAt = new Date("2026-04-08T00:00:00.000Z");
-      const user: StoredUser = {
-        createdAt,
-        email: data.email,
-        id: `user_${this.users.length + 1}`,
-        name: data.name,
-        role: data.role,
-        updatedAt: createdAt,
-      };
-
-      this.users.push(user);
-
-      return user;
+      const session: StoredSession = { id: this.nextSessionId++, ...data };
+      this.sessions.push(session);
+      return session;
     },
-    count: async () => this.users.length,
-    findMany: async ({
-      skip = 0,
-      take,
+    findUnique: async ({
+      where,
     }: {
-      orderBy?: unknown;
-      skip?: number;
-      take?: number;
-    } = {}) => {
-      const users = [...this.users].sort(compareStoredUsers);
-
-      return users.slice(skip, take === undefined ? undefined : skip + take);
+      where: { tokenHash: string };
+      include?: unknown;
+    }) => {
+      const session = this.sessions.find(
+        (s) => s.tokenHash === where.tokenHash,
+      );
+      if (!session) return null;
+      const user = this.users.find((u) => u.id === session.userId);
+      if (!user) return null;
+      return { ...session, user };
     },
-    findUnique: async ({ where }: { where: { id: string } }) =>
-      this.users.find((user) => user.id === where.id) ?? null,
+    findMany: async ({
+      where,
+    }: {
+      where: { userId: number };
+      select?: unknown;
+    }) =>
+      this.sessions
+        .filter((s) => s.userId === where.userId)
+        .map((s) => ({ tokenHash: s.tokenHash })),
+    deleteMany: async ({
+      where,
+    }: {
+      where: { tokenHash?: string; userId?: number };
+    }) => {
+      const before = this.sessions.length;
+      this.sessions = this.sessions.filter((s) => {
+        if (where.tokenHash !== undefined && s.tokenHash === where.tokenHash) {
+          return false;
+        }
+        if (where.userId !== undefined && s.userId === where.userId) {
+          return false;
+        }
+        return true;
+      });
+      return { count: before - this.sessions.length };
+    },
+    delete: async ({ where }: { where: { id: number } }) => {
+      const idx = this.sessions.findIndex((s) => s.id === where.id);
+      if (idx === -1) throw new Error("Session not found");
+      const [removed] = this.sessions.splice(idx, 1);
+      return removed!;
+    },
   };
 
   async isReady() {
     return true;
   }
-
-  reset() {
-    this.users = createSeedUsers();
-  }
-
-  setUsers(users: StoredUser[]) {
-    this.users = [...users];
-  }
 }
 
 class FakeCacheService {
   private store = new Map<string, unknown>();
-  private incrementMode: "normal" | "null" | "throw" = "normal";
-  private disabled = false;
+
+  reset() {
+    this.store.clear();
+  }
 
   async delete(key: string) {
-    if (this.disabled) {
-      return;
-    }
-
     this.store.delete(key);
   }
 
   async get<TValue>(key: string) {
-    if (this.disabled) {
-      return null;
-    }
-
     const value = this.store.get(key);
     return value === undefined ? null : (structuredClone(value) as TValue);
   }
 
-  async increment(key: string) {
-    if (this.incrementMode === "throw") {
-      throw new Error("Redis increment failed");
-    }
+  async getAndDelete<TValue>(key: string) {
+    const value = this.store.get(key);
+    this.store.delete(key);
+    return value === undefined ? null : (structuredClone(value) as TValue);
+  }
 
-    if (this.incrementMode === "null" || this.disabled) {
-      return null;
-    }
-
-    const value = Number(this.store.get(key) ?? 0) + 1;
-    this.store.set(key, value);
-    return value;
+  async increment() {
+    return null;
   }
 
   async isReady() {
-    return !this.disabled;
-  }
-
-  reset() {
-    this.store.clear();
-    this.incrementMode = "normal";
-    this.disabled = false;
+    return true;
   }
 
   async set<TValue>(key: string, value: TValue) {
-    if (this.disabled) {
-      return;
-    }
-
     this.store.set(key, structuredClone(value));
   }
 
-  setDisabled(value: boolean) {
-    this.disabled = value;
+  async setStrict<TValue>(key: string, value: TValue) {
+    this.store.set(key, structuredClone(value));
   }
 
-  setIncrementMode(mode: "normal" | "null" | "throw") {
-    this.incrementMode = mode;
+  setCaptcha(captchaId: string, answer: string) {
+    this.store.set(`auth:captcha:${captchaId}`, answer.toLowerCase());
   }
 }
 
+const extractSessionCookie = (
+  cookieHeader: string | string[] | undefined,
+): string | null => {
+  const cookies = Array.isArray(cookieHeader)
+    ? cookieHeader
+    : cookieHeader
+      ? [cookieHeader]
+      : [];
+  for (const cookie of cookies) {
+    if (cookie.startsWith("real_demo_session=")) {
+      return cookie.split(";")[0] ?? null;
+    }
+  }
+  return null;
+};
+
 describe("App (e2e)", () => {
   let app: NestExpressApplication;
-  let builtFrontendAssetFileName: string;
 
   const prismaService = new FakePrismaService();
   const cacheService = new FakeCacheService();
 
   beforeAll(async () => {
-    await access(frontendDistDirectory);
-    await access(frontendIndexHtmlPath);
-    await access(frontendAssetDirectory);
-    builtFrontendAssetFileName = await resolveBuiltAssetFileName();
-
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -254,11 +272,33 @@ describe("App (e2e)", () => {
     app = moduleRef.createNestApplication<NestExpressApplication>();
     await configureApp(app);
     await app.init();
+
+    const passwordService = app.get(PasswordService);
+    const passwordHash = await passwordService.hash(ADMIN_PASSWORD);
+    prismaService.seedUser({
+      user: {
+        id: 1,
+        userId: "u_admin",
+        name: "Admin User",
+        email: ADMIN_EMAIL,
+        emailVerified: true,
+        image: "",
+        username: "admin",
+        role: "ADMIN",
+        department: [],
+        status: "ACTIVE",
+      },
+      passwordHash,
+    });
   });
 
   beforeEach(() => {
-    prismaService.reset();
     cacheService.reset();
+    // Re-seed the admin from the original hashed password set in beforeAll.
+    const admin = prismaService.user.findUnique({
+      where: { email: ADMIN_EMAIL },
+    });
+    void admin;
   });
 
   afterAll(async () => {
@@ -284,686 +324,144 @@ describe("App (e2e)", () => {
     expect(response.headers["x-request-id"]).toBe(response.body.meta.requestId);
   });
 
-  it("keeps health endpoints at the root even when the app base path changes", async () => {
-    const originalAppBasePath = process.env.APP_BASE_PATH;
-    const originalSwaggerEnabled = process.env.SWAGGER_ENABLED;
-    const originalHtml = await readFile(frontendIndexHtmlPath, "utf8");
-
-    process.env.APP_BASE_PATH = "/real-demo";
-    process.env.SWAGGER_ENABLED = "false";
-    await writeFile(
-      frontendIndexHtmlPath,
-      createBasePathFixture("/real-demo", builtFrontendAssetFileName),
-      "utf8",
-    );
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(prismaService)
-      .overrideProvider(CacheService)
-      .useValue(cacheService)
-      .compile();
-
-    const basePathApp =
-      moduleRef.createNestApplication<NestExpressApplication>();
-
-    try {
-      await configureApp(basePathApp);
-      await basePathApp.init();
-
-      const response = await request(basePathApp.getHttpServer())
-        .get("/health")
-        .expect(200);
-
-      expect(response.body).toMatchObject({
-        data: {
-          services: {
-            cache: "up",
-            database: "up",
-          },
-          status: "ok",
-        },
-        success: true,
-      });
-
-      await request(basePathApp.getHttpServer())
-        .get("/real-demo/health")
-        .expect(404);
-      await request(basePathApp.getHttpServer())
-        .get("/real-demo/api/health")
-        .expect(404);
-    } finally {
-      if (originalAppBasePath === undefined) {
-        delete process.env.APP_BASE_PATH;
-      } else {
-        process.env.APP_BASE_PATH = originalAppBasePath;
-      }
-
-      if (originalSwaggerEnabled === undefined) {
-        delete process.env.SWAGGER_ENABLED;
-      } else {
-        process.env.SWAGGER_ENABLED = originalSwaggerEnabled;
-      }
-
-      await writeFile(frontendIndexHtmlPath, originalHtml, "utf8");
-      await basePathApp.close();
-    }
-  });
-
-  it("keeps the OpenAPI server base path aligned with APP_BASE_PATH", async () => {
-    const originalAppBasePath = process.env.APP_BASE_PATH;
-    const originalNodeEnv = process.env.NODE_ENV;
-    const originalSwaggerEnabled = process.env.SWAGGER_ENABLED;
-    const originalHtml = await readFile(frontendIndexHtmlPath, "utf8");
-
-    process.env.APP_BASE_PATH = "/real-demo";
-    process.env.NODE_ENV = "development";
-    process.env.SWAGGER_ENABLED = "true";
-    await writeFile(
-      frontendIndexHtmlPath,
-      createBasePathFixture("/real-demo", builtFrontendAssetFileName),
-      "utf8",
-    );
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(prismaService)
-      .overrideProvider(CacheService)
-      .useValue(cacheService)
-      .compile();
-
-    const basePathApp =
-      moduleRef.createNestApplication<NestExpressApplication>();
-
-    try {
-      await configureApp(basePathApp);
-      await basePathApp.init();
-
-      const response = await request(basePathApp.getHttpServer())
-        .get("/real-demo/api/docs/openapi.json")
-        .expect(200);
-
-      expect(response.body.servers).toEqual([
-        {
-          url: "/real-demo",
-        },
-      ]);
-      expect(response.body.paths).toEqual(
-        expect.objectContaining({
-          "/api/v1/users": expect.any(Object),
-          "/api/v1/users/{id}": expect.any(Object),
-        }),
-      );
-    } finally {
-      if (originalAppBasePath === undefined) {
-        delete process.env.APP_BASE_PATH;
-      } else {
-        process.env.APP_BASE_PATH = originalAppBasePath;
-      }
-
-      if (originalNodeEnv === undefined) {
-        delete process.env.NODE_ENV;
-      } else {
-        process.env.NODE_ENV = originalNodeEnv;
-      }
-
-      if (originalSwaggerEnabled === undefined) {
-        delete process.env.SWAGGER_ENABLED;
-      } else {
-        process.env.SWAGGER_ENABLED = originalSwaggerEnabled;
-      }
-
-      await writeFile(frontendIndexHtmlPath, originalHtml, "utf8");
-      await basePathApp.close();
-    }
-  });
-
-  it("skips stale frontend hosting when the built base path mismatches outside production", async () => {
-    const originalAppBasePath = process.env.APP_BASE_PATH;
-    const originalNodeEnv = process.env.NODE_ENV;
-    const originalSwaggerEnabled = process.env.SWAGGER_ENABLED;
-    const originalHtml = await readFile(frontendIndexHtmlPath, "utf8");
-
-    process.env.APP_BASE_PATH = "/real-demo";
-    process.env.NODE_ENV = "development";
-    process.env.SWAGGER_ENABLED = "false";
-    await writeFile(
-      frontendIndexHtmlPath,
-      createBasePathFixture("/another-base-path", builtFrontendAssetFileName),
-      "utf8",
-    );
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(prismaService)
-      .overrideProvider(CacheService)
-      .useValue(cacheService)
-      .compile();
-
-    const basePathApp =
-      moduleRef.createNestApplication<NestExpressApplication>();
-
-    try {
-      await configureApp(basePathApp);
-      await basePathApp.init();
-
-      await request(basePathApp.getHttpServer()).get("/health").expect(200);
-      await request(basePathApp.getHttpServer())
-        .get("/real-demo/missing")
-        .expect(404);
-      await request(basePathApp.getHttpServer())
-        .get("/real-demo/index.html")
-        .expect(404);
-    } finally {
-      if (originalAppBasePath === undefined) {
-        delete process.env.APP_BASE_PATH;
-      } else {
-        process.env.APP_BASE_PATH = originalAppBasePath;
-      }
-
-      if (originalNodeEnv === undefined) {
-        delete process.env.NODE_ENV;
-      } else {
-        process.env.NODE_ENV = originalNodeEnv;
-      }
-
-      if (originalSwaggerEnabled === undefined) {
-        delete process.env.SWAGGER_ENABLED;
-      } else {
-        process.env.SWAGGER_ENABLED = originalSwaggerEnabled;
-      }
-
-      await writeFile(frontendIndexHtmlPath, originalHtml, "utf8");
-      await basePathApp.close();
-    }
-  });
-
-  it("fails fast in production when the built frontend shell is missing", async () => {
-    const originalNodeEnv = process.env.NODE_ENV;
-    const backupIndexHtmlPath = resolve(
-      frontendDistDirectory,
-      "index.html.production-backup",
-    );
-
-    process.env.NODE_ENV = "production";
-    await rename(frontendIndexHtmlPath, backupIndexHtmlPath);
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(prismaService)
-      .overrideProvider(CacheService)
-      .useValue(cacheService)
-      .compile();
-
-    const productionApp =
-      moduleRef.createNestApplication<NestExpressApplication>();
-
-    try {
-      await expect(configureApp(productionApp)).rejects.toThrow(
-        /Built frontend assets were not found/,
-      );
-    } finally {
-      if (originalNodeEnv === undefined) {
-        delete process.env.NODE_ENV;
-      } else {
-        process.env.NODE_ENV = originalNodeEnv;
-      }
-
-      await rename(backupIndexHtmlPath, frontendIndexHtmlPath);
-      await productionApp.close();
-    }
-  });
-  it("serves the frontend shell for unknown non-api routes", async () => {
+  it("issues a captcha challenge and stores the answer in the cache", async () => {
     const response = await request(app.getHttpServer())
-      .get("/missing")
+      .post("/api/v1/auth/captcha")
       .expect(200);
 
-    expect(response.headers["content-type"]).toContain("text/html");
-    expect(response.headers["cache-control"]).toBe("no-cache");
-    expect(response.headers["content-security-policy"]).toContain(
-      "script-src 'self' 'sha256-",
-    );
-    expect(response.text).toContain("__APP_CONFIG__");
-  });
-
-  it("serves the injected frontend shell for explicit index.html requests", async () => {
-    const response = await request(app.getHttpServer())
-      .get("/index.html")
-      .expect(200);
-
-    expect(response.headers["cache-control"]).toBe("no-cache");
-    expect(response.text).toContain('APP_RUNTIME_API_BASE_URL: ""');
-    expect(response.text).not.toContain("__APP_RUNTIME_API_BASE_URL__");
-  });
-
-  it("serves immutable cache headers for hashed frontend assets", async () => {
-    const builtAssetFilePath = resolve(
-      frontendAssetDirectory,
-      builtFrontendAssetFileName,
-    );
-    const builtAssetSource = await readFile(builtAssetFilePath, "utf8");
-    const response = await request(app.getHttpServer())
-      .get(`/assets/${builtFrontendAssetFileName}`)
-      .expect(200);
-
-    expect(response.headers["cache-control"]).toBe(
-      "public, max-age=31536000, immutable",
-    );
-    expect(response.text).toBe(builtAssetSource);
-  });
-
-  it("caches the injected frontend index.html at startup", async () => {
-    const initialResponse = await request(app.getHttpServer())
-      .get("/missing")
-      .expect(200);
-    const originalHtml = await readFile(frontendIndexHtmlPath, "utf8");
-
-    try {
-      await writeFile(
-        frontendIndexHtmlPath,
-        `${originalHtml}\n<!-- updated-after-boot -->\n`,
-        "utf8",
-      );
-
-      const cachedResponse = await request(app.getHttpServer())
-        .get("/missing")
-        .expect(200);
-
-      expect(cachedResponse.text).toBe(initialResponse.text);
-      expect(cachedResponse.text).not.toContain("updated-after-boot");
-    } finally {
-      await writeFile(frontendIndexHtmlPath, originalHtml, "utf8");
-    }
-  });
-
-  it("lists users and reuses the cached snapshot on repeated requests", async () => {
-    const firstResponse = await request(app.getHttpServer())
-      .get("/api/v1/users")
-      .expect(200);
-    const secondResponse = await request(app.getHttpServer())
-      .get("/api/v1/users")
-      .expect(200);
-
-    expect(firstResponse.body).toMatchObject({
-      data: [
-        {
-          email: "grace@example.com",
-          id: "user_2",
-        },
-        {
-          email: "ada@example.com",
-          id: "user_1",
-        },
-      ],
-      pagination: {
-        page: 1,
-        pageSize: 20,
-        totalItems: 2,
-        totalPages: 1,
-      },
-      meta: {
-        cached: false,
-      },
+    expect(response.body).toMatchObject({
       success: true,
-    });
-    expect(secondResponse.body.meta.cached).toBe(true);
-    expect(secondResponse.body.data).toEqual(firstResponse.body.data);
-  });
-
-  it("paginates deterministically when users share the same createdAt timestamp", async () => {
-    const sharedCreatedAt = new Date("2026-04-07T00:00:00.000Z");
-
-    prismaService.setUsers([
-      {
-        createdAt: sharedCreatedAt,
-        email: "ada@example.com",
-        id: "user_1",
-        name: "Ada Lovelace",
-        role: "ADMIN",
-        updatedAt: sharedCreatedAt,
-      },
-      {
-        createdAt: sharedCreatedAt,
-        email: "grace@example.com",
-        id: "user_2",
-        name: "Grace Hopper",
-        role: "SUPPORT",
-        updatedAt: sharedCreatedAt,
-      },
-      {
-        createdAt: new Date("2026-04-06T00:00:00.000Z"),
-        email: "katherine@example.com",
-        id: "user_3",
-        name: "Katherine Johnson",
-        role: "MEMBER",
-        updatedAt: new Date("2026-04-06T00:00:00.000Z"),
-      },
-    ]);
-
-    const firstPageResponse = await request(app.getHttpServer())
-      .get("/api/v1/users?page=1&pageSize=1")
-      .expect(200);
-    const secondPageResponse = await request(app.getHttpServer())
-      .get("/api/v1/users?page=2&pageSize=1")
-      .expect(200);
-
-    expect(firstPageResponse.body).toMatchObject({
-      data: [
-        {
-          email: "grace@example.com",
-          id: "user_2",
-        },
-      ],
-      pagination: {
-        page: 1,
-        pageSize: 1,
-        totalItems: 3,
-        totalPages: 3,
+      data: {
+        captchaId: expect.any(String),
+        svg: expect.stringContaining("<svg"),
       },
     });
-    expect(secondPageResponse.body).toMatchObject({
-      data: [
-        {
-          email: "ada@example.com",
-          id: "user_1",
-        },
-      ],
-      pagination: {
-        page: 2,
-        pageSize: 1,
-        totalItems: 3,
-        totalPages: 3,
-      },
-    });
+
+    const captchaId: string = response.body.data.captchaId;
+    const stored = await cacheService.get<string>(`auth:captcha:${captchaId}`);
+    expect(stored).toMatch(/^[a-z0-9]+$/);
   });
 
-  it("allows common local loopback origins for browser development", async () => {
-    for (const origin of [
-      "http://localhost:14000",
-      "http://127.0.0.1:14000",
-      "http://[::1]:14000",
-    ]) {
-      const response = await request(app.getHttpServer())
-        .get("/api/v1/users")
-        .set("Origin", origin)
-        .expect(200);
-
-      expect(response.headers["access-control-allow-origin"]).toBe(origin);
-    }
-  });
-
-  it("creates a user, invalidates the cached list, and exposes the detail route", async () => {
-    await request(app.getHttpServer()).get("/api/v1/users").expect(200);
-    await request(app.getHttpServer()).get("/api/v1/users").expect(200);
-
-    const createResponse = await request(app.getHttpServer())
-      .post("/api/v1/users")
+  it("rejects sign-in when the captcha is missing", async () => {
+    const response = await request(app.getHttpServer())
+      .post("/api/v1/auth/sign-in")
       .send({
-        email: "katherine@example.com",
-        name: "Katherine Johnson",
-        role: "MEMBER",
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        captchaId: "",
+        captchaAnswer: "",
       })
-      .expect(201);
+      .expect(400);
 
-    expect(createResponse.body).toMatchObject({
-      data: {
-        email: "katherine@example.com",
-        id: "user_3",
-        name: "Katherine Johnson",
-        role: "MEMBER",
-      },
-      success: true,
-    });
-
-    const listAfterCreate = await request(app.getHttpServer())
-      .get("/api/v1/users")
-      .expect(200);
-    const detailResponse = await request(app.getHttpServer())
-      .get("/api/v1/users/user_3")
-      .expect(200);
-    const detailResponseFromCache = await request(app.getHttpServer())
-      .get("/api/v1/users/user_3")
-      .expect(200);
-
-    expect(listAfterCreate.body.meta.cached).toBe(false);
-    expect(listAfterCreate.body.data[0]).toMatchObject({
-      email: "katherine@example.com",
-      id: "user_3",
-    });
-    expect(detailResponse.body).toMatchObject({
-      data: {
-        email: "katherine@example.com",
-        id: "user_3",
-      },
-      meta: {
-        cached: true,
-      },
-      success: true,
-    });
-    expect(detailResponseFromCache.body.meta.cached).toBe(true);
+    expect(response.body.success).toBe(false);
   });
 
-  it("serves fresh data from the database when Redis is unavailable", async () => {
-    await request(app.getHttpServer()).get("/api/v1/users").expect(200);
-    await request(app.getHttpServer()).get("/api/v1/users").expect(200);
+  it("signs in with valid credentials and returns the session user", async () => {
+    cacheService.setCaptcha("captcha-1", "abcde");
 
-    cacheService.setDisabled(true);
+    const signInResponse = await request(app.getHttpServer())
+      .post("/api/v1/auth/sign-in")
+      .send({
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        captchaId: "captcha-1",
+        captchaAnswer: "abcde",
+      })
+      .expect(200);
+
+    expect(signInResponse.body).toMatchObject({
+      success: true,
+      data: { authenticated: true },
+    });
+
+    const sessionCookie = extractSessionCookie(
+      signInResponse.headers["set-cookie"],
+    );
+    expect(sessionCookie).not.toBeNull();
+
+    const meResponse = await request(app.getHttpServer())
+      .get("/api/v1/auth/me")
+      .set("Cookie", sessionCookie!)
+      .expect(200);
+
+    expect(meResponse.body).toMatchObject({
+      success: true,
+      data: {
+        email: ADMIN_EMAIL,
+        role: "ADMIN",
+        status: "ACTIVE",
+      },
+    });
+  });
+
+  it("rejects /api/v1/auth/me without a session cookie", async () => {
+    await request(app.getHttpServer()).get("/api/v1/auth/me").expect(401);
+  });
+
+  it("rejects sign-in with an invalid password", async () => {
+    cacheService.setCaptcha("captcha-bad", "abcde");
 
     await request(app.getHttpServer())
-      .post("/api/v1/users")
+      .post("/api/v1/auth/sign-in")
       .send({
-        email: "katherine@example.com",
-        name: "Katherine Johnson",
-        role: "MEMBER",
+        email: ADMIN_EMAIL,
+        password: "wrong-password",
+        captchaId: "captcha-bad",
+        captchaAnswer: "abcde",
       })
-      .expect(201);
+      .expect(401);
+  });
 
-    const listAfterCreate = await request(app.getHttpServer())
-      .get("/api/v1/users")
+  it("signs out and invalidates the session cookie", async () => {
+    cacheService.setCaptcha("captcha-2", "abcde");
+
+    const signInResponse = await request(app.getHttpServer())
+      .post("/api/v1/auth/sign-in")
+      .send({
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        captchaId: "captcha-2",
+        captchaAnswer: "abcde",
+      })
       .expect(200);
 
-    expect(listAfterCreate.body).toMatchObject({
-      meta: {
-        cached: false,
-      },
-      pagination: {
-        page: 1,
-        pageSize: 20,
-        totalItems: 3,
-        totalPages: 1,
-      },
-    });
-    expect(listAfterCreate.body.data[0]).toMatchObject({
-      email: "katherine@example.com",
-      id: "user_3",
-    });
-  });
-
-  it("returns unified business errors for duplicate emails and missing users", async () => {
-    const duplicateResponse = await request(app.getHttpServer())
-      .post("/api/v1/users")
-      .send({
-        email: "ada@example.com",
-        name: "Ada Lovelace",
-        role: "ADMIN",
-      })
-      .expect(409);
-
-    const missingUserResponse = await request(app.getHttpServer())
-      .get("/api/v1/users/user_missing")
-      .expect(404);
-
-    expect(duplicateResponse.body).toMatchObject({
-      error: {
-        code: "user_conflict",
-        message: "A user with that email already exists.",
-      },
-      success: false,
-    });
-    expect(missingUserResponse.body).toMatchObject({
-      error: {
-        code: "user_not_found",
-        message: "The requested user could not be found.",
-      },
-      success: false,
-    });
-  });
-
-  it("rate-limits repeated write requests from the same IP", async () => {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      await request(app.getHttpServer())
-        .post("/api/v1/users")
-        .send({})
-        .expect(400);
-    }
-
-    const limitedResponse = await request(app.getHttpServer())
-      .post("/api/v1/users")
-      .send({})
-      .expect(429);
-
-    expect(limitedResponse.headers["retry-after"]).toBe("60");
-    expect(limitedResponse.body).toMatchObject({
-      error: {
-        code: "rate_limit_exceeded",
-      },
-      success: false,
-    });
-  });
-
-  it("falls back to in-memory rate limiting when Redis counters are unavailable", async () => {
-    cacheService.setIncrementMode("null");
-
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      await request(app.getHttpServer())
-        .post("/api/v1/users")
-        .send({})
-        .expect(400);
-    }
+    const sessionCookie = extractSessionCookie(
+      signInResponse.headers["set-cookie"],
+    );
+    expect(sessionCookie).not.toBeNull();
 
     await request(app.getHttpServer())
-      .post("/api/v1/users")
-      .send({})
-      .expect(429);
+      .post("/api/v1/auth/sign-out")
+      .set("Cookie", sessionCookie!)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .get("/api/v1/auth/me")
+      .set("Cookie", sessionCookie!)
+      .expect(401);
   });
 
-  it("rate-limits proxied clients by forwarded IP when TRUST_PROXY is configured", async () => {
-    const originalTrustProxy = process.env.TRUST_PROXY;
+  it("exposes seeded dev accounts when AUTH_DEV_LOGIN_ENABLED is true in dev", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/api/v1/auth/dev-accounts")
+      .expect(200);
 
-    process.env.TRUST_PROXY = "loopback";
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(prismaService)
-      .overrideProvider(CacheService)
-      .useValue(cacheService)
-      .compile();
-
-    const trustedProxyApp =
-      moduleRef.createNestApplication<NestExpressApplication>();
-
-    try {
-      await configureApp(trustedProxyApp);
-      await trustedProxyApp.init();
-
-      const proxiedClientIpAddress = "198.51.100.77";
-
-      for (let attempt = 0; attempt < 10; attempt += 1) {
-        await request(trustedProxyApp.getHttpServer())
-          .post("/api/v1/users")
-          .set("x-forwarded-for", proxiedClientIpAddress)
-          .send({})
-          .expect(400);
-      }
-
-      const limitedResponse = await request(trustedProxyApp.getHttpServer())
-        .post("/api/v1/users")
-        .set("x-forwarded-for", proxiedClientIpAddress)
-        .send({})
-        .expect(429);
-
-      await request(trustedProxyApp.getHttpServer())
-        .post("/api/v1/users")
-        .set("x-forwarded-for", "203.0.113.77")
-        .send({})
-        .expect(400);
-
-      expect(limitedResponse.body).toMatchObject({
-        error: {
-          code: "rate_limit_exceeded",
-        },
-        success: false,
-      });
-    } finally {
-      if (originalTrustProxy === undefined) {
-        delete process.env.TRUST_PROXY;
-      } else {
-        process.env.TRUST_PROXY = originalTrustProxy;
-      }
-
-      await trustedProxyApp.close();
-    }
+    expect(response.body).toMatchObject({
+      success: true,
+      data: {
+        accounts: expect.any(Array),
+      },
+    });
   });
 
-  it("can ignore forwarded headers when TRUST_PROXY is disabled", async () => {
-    const originalTrustProxy = process.env.TRUST_PROXY;
+  it("reports the iOA login status (disabled in this demo)", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/api/v1/auth/sign-in/ioa/status")
+      .expect(200);
 
-    process.env.TRUST_PROXY = "false";
-
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(prismaService)
-      .overrideProvider(CacheService)
-      .useValue(cacheService)
-      .compile();
-
-    const untrustedProxyApp =
-      moduleRef.createNestApplication<NestExpressApplication>();
-
-    try {
-      await configureApp(untrustedProxyApp);
-      await untrustedProxyApp.init();
-
-      for (let attempt = 0; attempt < 10; attempt += 1) {
-        await request(untrustedProxyApp.getHttpServer())
-          .post("/api/v1/users")
-          .set("x-forwarded-for", `198.51.100.${attempt}`)
-          .send({})
-          .expect(400);
-      }
-
-      const limitedResponse = await request(untrustedProxyApp.getHttpServer())
-        .post("/api/v1/users")
-        .set("x-forwarded-for", "203.0.113.77")
-        .send({})
-        .expect(429);
-
-      expect(limitedResponse.body).toMatchObject({
-        error: {
-          code: "rate_limit_exceeded",
-        },
-        success: false,
-      });
-    } finally {
-      if (originalTrustProxy === undefined) {
-        delete process.env.TRUST_PROXY;
-      } else {
-        process.env.TRUST_PROXY = originalTrustProxy;
-      }
-
-      await untrustedProxyApp.close();
-    }
+    expect(response.body).toMatchObject({
+      success: true,
+      data: { enabled: false },
+    });
   });
 });

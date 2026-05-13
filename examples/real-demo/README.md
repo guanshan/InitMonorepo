@@ -35,14 +35,15 @@ This directory contains an English-only reference implementation generated to ma
 
 ## Getting Started
 
-1. Run `make setup`
-2. Start development with `make dev`
-3. Open `http://localhost:14000`
-4. Visit `http://localhost:13000/api/docs` for Swagger UI when `APP_BASE_PATH=/`, or `http://localhost:13000{APP_BASE_PATH}/api/docs` when deployed under a sub-path
-5. Check `http://localhost:13000/health`, `http://localhost:13000/ready`, and `http://localhost:13000/live`; health diagnostics stay at the root even when `APP_BASE_PATH` serves the app from a sub-path
-6. Run `pnpm storybook:ui` to inspect shared UI primitives at `http://localhost:16006`
+1. Run `make setup` — this is the one-time bootstrap. It copies `.env` files from `.env.example`, installs dependencies, starts local MySQL/Redis, generates the SDK, applies migrations, and seeds the database.
+2. When `setup` pauses after creating fresh `.env` files, optionally edit `apps/server/.env` to point `DATABASE_URL` / `REDIS_URL` at a remote MySQL/Redis instance. Local Docker infra is auto-skipped whenever those URLs point to a non-`localhost` host, so this is the right time to switch to remote services. Press Enter to continue, or Ctrl+C to stop and edit first.
+3. Start day-to-day development with `make dev` (this only runs `pnpm db:migrate` and `pnpm dev` — it assumes `make setup` already ran).
+4. Open `http://localhost:14000`
+5. Visit `http://localhost:13000/api/docs` for Swagger UI when `APP_BASE_PATH=/`, or `http://localhost:13000{APP_BASE_PATH}/api/docs` when deployed under a sub-path
+6. Check `http://localhost:13000/health`, `http://localhost:13000/ready`, and `http://localhost:13000/live`; health diagnostics stay at the root even when `APP_BASE_PATH` serves the app from a sub-path
+7. Run `pnpm storybook:ui` to inspect shared UI primitives at `http://localhost:16006`
 
-If `docker compose` is unavailable, the helper scripts in `scripts/` fall back to plain `docker run` for MySQL and Redis.
+If `docker compose` is unavailable, the helper scripts in `scripts/` fall back to plain `docker run` for MySQL and Redis. To re-start local infra explicitly after stopping it, run `make infra-up`.
 
 ## Database Workflows
 

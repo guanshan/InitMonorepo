@@ -9,6 +9,7 @@ import { joinUrlPath } from "@real-demo/shared";
 import { HttpStatus, Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import cookieParser from "cookie-parser";
 import { cleanupOpenApiDoc } from "nestjs-zod";
 
 import { AppModule } from "./app.module";
@@ -653,10 +654,12 @@ export const configureApp = async (app: NestExpressApplication) => {
   );
 
   app.enableCors({
+    credentials: true,
     origin: environment.corsOrigins,
   });
   app.enableShutdownHooks();
   app.set("trust proxy", environment.trustProxy);
+  app.use(cookieParser());
   app.use(attachRequestId);
   app.use(
     createSecurityHeadersMiddleware(

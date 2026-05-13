@@ -8,7 +8,10 @@ import {
 } from "@nestjs/common";
 import { createClient } from "redis";
 
-import type { CachePort } from "../../common/cache/cache.port";
+import {
+  CacheUnavailableError,
+  type CachePort,
+} from "../../common/cache/cache.port";
 import { loadEnvironment } from "../../common/config/env";
 
 @Injectable()
@@ -90,6 +93,24 @@ export class CacheService implements CachePort, OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async getAndDelete<TValue>(key: string) {
+    if (!this.client?.isOpen) {
+      return null;
+    }
+
+    try {
+      // GETDEL atomically reads and removes the entry, preventing replay of
+      // one-shot challenges across concurrent verification attempts.
+      const value = await this.client.getDel(key);
+      return value ? (JSON.parse(value) as TValue) : null;
+    } catch (error) {
+      this.logger.warn(
+        `Redis getDel failed for key "${key}": ${error instanceof Error ? error.message : "unknown error"}`,
+      );
+      return null;
+    }
+  }
+
   async increment(key: string, ttlSeconds = 60) {
     if (!this.client?.isOpen) {
       return null;
@@ -121,6 +142,24 @@ export class CacheService implements CachePort, OnModuleInit, OnModuleDestroy {
       });
     } catch (error) {
       this.logger.warn(
+        `Redis set failed for key "${key}": ${error instanceof Error ? error.message : "unknown error"}`,
+      );
+    }
+  }
+
+  async setStrict<TValue>(key: string, value: TValue, ttlSeconds = 60) {
+    if (!this.client?.isOpen) {
+      throw new CacheUnavailableError(
+        `Cache backend is offline while writing key "${key}".`,
+      );
+    }
+
+    try {
+      await this.client.set(key, JSON.stringify(value), {
+        EX: ttlSeconds,
+      });
+    } catch (error) {
+      throw new CacheUnavailableError(
         `Redis set failed for key "${key}": ${error instanceof Error ? error.message : "unknown error"}`,
       );
     }

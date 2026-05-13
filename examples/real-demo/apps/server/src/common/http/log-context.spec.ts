@@ -17,8 +17,8 @@ describe("getLogModule", () => {
   it("maps versioned api paths to the business module", () => {
     process.env.APP_BASE_PATH = "/";
 
-    expect(getLogModule("/api/v1/users")).toBe("users");
-    expect(getLogModule("/api/v1/users/user_1")).toBe("users");
+    expect(getLogModule("/api/v1/auth")).toBe("auth");
+    expect(getLogModule("/api/v1/auth/me")).toBe("auth");
   });
 
   it("keeps docs and health routes stable", () => {
@@ -31,6 +31,6 @@ describe("getLogModule", () => {
   it("normalizes app base paths before resolving versioned api modules", () => {
     process.env.APP_BASE_PATH = "/real-demo";
 
-    expect(getLogModule("/real-demo/api/v1/users")).toBe("users");
+    expect(getLogModule("/real-demo/api/v1/auth")).toBe("auth");
   });
 });

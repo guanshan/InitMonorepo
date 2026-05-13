@@ -1,19 +1,5 @@
 /**
- * Pure types, schemas, and base client — no React dependency.
- * Import from "@real-demo/sdk/types" to avoid pulling in React.
+ * Pure types — no React dependency. Import from "@real-demo/sdk/types"
+ * for use inside server tests, Node tooling, and the web app.
  */
-export * from "./generated/model";
-export { ApiRequestError } from "./runtime/fetcher";
-export {
-  listUsers,
-  getUserById,
-  createUser,
-  getListUsersUrl,
-  getGetUserByIdUrl,
-  getCreateUserUrl,
-} from "./generated/client";
-export type {
-  listUsersResponse,
-  getUserByIdResponse,
-  createUserResponse,
-} from "./generated/client";
+export { ApiRequestError, customFetcher } from "./runtime/fetcher";

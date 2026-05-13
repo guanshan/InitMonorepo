@@ -3,6 +3,59 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ENV_FILE="${ROOT_DIR}/apps/server/.env"
+
+# Extract the host portion of a URL value defined in the server .env file.
+# Returns empty string if the file or key is missing.
+env_url_host() {
+  local key="$1"
+  [ -f "${ENV_FILE}" ] || return 0
+
+  local line
+  line="$(grep -E "^${key}=" "${ENV_FILE}" | tail -n 1 || true)"
+  [ -n "${line}" ] || return 0
+
+  local value="${line#*=}"
+  value="${value%\"}"
+  value="${value#\"}"
+  value="${value%\'}"
+  value="${value#\'}"
+
+  # Strip scheme
+  local rest="${value#*://}"
+  # Strip credentials if present
+  rest="${rest##*@}"
+  # Strip path / query
+  rest="${rest%%/*}"
+  rest="${rest%%\?*}"
+  # Strip port
+  local host="${rest%%:*}"
+  # Strip IPv6 brackets
+  host="${host#[}"
+  host="${host%]}"
+
+  printf '%s' "${host}"
+}
+
+host_is_local() {
+  local host="$1"
+  [ -z "${host}" ] && return 0
+  case "${host}" in
+    localhost|127.0.0.1|0.0.0.0|::1) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+DB_HOST="$(env_url_host DATABASE_URL)"
+REDIS_HOST="$(env_url_host REDIS_URL)"
+
+if ! host_is_local "${DB_HOST}" || ! host_is_local "${REDIS_HOST}"; then
+  echo "Skipping local infra: apps/server/.env points to remote services"
+  [ -n "${DB_HOST}" ]    && echo "  DATABASE_URL host: ${DB_HOST}"
+  [ -n "${REDIS_HOST}" ] && echo "  REDIS_URL    host: ${REDIS_HOST}"
+  echo "  (set both to localhost to use the bundled Docker stack)"
+  exit 0
+fi
 
 wait_for_mysql() {
   local attempts=60

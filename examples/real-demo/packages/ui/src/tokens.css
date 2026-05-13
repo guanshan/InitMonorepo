@@ -63,7 +63,7 @@
   --glow-secondary: hsl(280 80% 70% / 0.2);
   --glass-bg: color-mix(in srgb, var(--color-surface-raised) 82%, transparent);
   --glass-border: color-mix(in srgb, var(--color-border-soft) 80%, transparent);
-  --glass-blur: 20px;
+  --glass-blur: 12px;
   --glass-saturate: 180%;
   --glass-highlight-strong: rgba(255, 255, 255, 0.5);
   --glass-highlight-medium: rgba(255, 255, 255, 0.4);
@@ -207,7 +207,7 @@
 
   /* ── Effects ── */
   --blur-surface: 16px;
-  --blur-blob: 80px;
+  --blur-blob: 48px;
   --outline-width-focus: 2px;
   --offset-focus: 3px;
   --offset-blob-lg-top: -8rem;

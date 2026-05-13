@@ -1,13 +1,21 @@
 import type { z } from "zod";
 
 import type {
-  CreateUserInputSchema,
-  ListUsersQuerySchema,
+  CaptchaChallengeSchema,
+  ChangePasswordInputSchema,
+  DevAccountSchema,
+  SessionUserSchema,
+  SignInInputSchema,
   UserRoleSchema,
-  UserSchema,
+  UserRoleSourceSchema,
+  UserStatusSchema,
 } from "../schemas/user.js";
 
-export type User = z.infer<typeof UserSchema>;
 export type UserRole = z.infer<typeof UserRoleSchema>;
-export type CreateUserInput = z.infer<typeof CreateUserInputSchema>;
-export type ListUsersQuery = z.infer<typeof ListUsersQuerySchema>;
+export type UserStatus = z.infer<typeof UserStatusSchema>;
+export type UserRoleSource = z.infer<typeof UserRoleSourceSchema>;
+export type SessionUser = z.infer<typeof SessionUserSchema>;
+export type SignInInput = z.infer<typeof SignInInputSchema>;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordInputSchema>;
+export type CaptchaChallenge = z.infer<typeof CaptchaChallengeSchema>;
+export type DevAccount = z.infer<typeof DevAccountSchema>;

@@ -13,6 +13,7 @@ const BooleanEnvironmentSchema = z
 const EnvironmentSchema = z.object({
   APP_BASE_PATH: z.string().default("/"),
   APP_RUNTIME_API_BASE_URL: z.string().default(""),
+  AUTH_DEV_LOGIN_ENABLED: BooleanEnvironmentSchema,
   CORS_ORIGIN: z.string().default("http://localhost:14000"),
   DATABASE_URL: z.string().trim().optional(),
   LOG_LEVEL: z
@@ -31,6 +32,7 @@ type TrustProxyValue = boolean | number | string | string[];
 
 type Environment = {
   appBasePath: string;
+  authDevLoginEnabled: boolean;
   corsOrigins: string[];
   databaseUrl: string;
   logLevel: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent";
@@ -130,6 +132,7 @@ export const loadEnvironment = (): Environment => {
 
   return {
     appBasePath: normalizedAppBasePath,
+    authDevLoginEnabled: parsed.AUTH_DEV_LOGIN_ENABLED,
     corsOrigins: [
       ...new Set(
         parsed.CORS_ORIGIN.split(",").flatMap(expandLoopbackCorsOrigin),
