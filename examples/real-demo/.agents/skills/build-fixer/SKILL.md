@@ -37,10 +37,10 @@ description: >
 make typecheck 2>&1 | head -100
 
 # 只看某个 workspace
-pnpm --filter @<scope>/web typecheck
-pnpm --filter @<scope>/server typecheck
-pnpm --filter @<scope>/shared typecheck
-pnpm --filter @<scope>/ui typecheck
+pnpm --filter @real-demo/web typecheck
+pnpm --filter @real-demo/server typecheck
+pnpm --filter @real-demo/shared typecheck
+pnpm --filter @real-demo/ui typecheck
 ```
 
 > 本仓库使用 TypeScript project references，单独 `npx tsc --noEmit <file>` 往往拿不到正确的 `rootDir`/alias，请优先走 `pnpm --filter` 或 `make typecheck`。
@@ -125,16 +125,16 @@ interface User {
 
 ### Pattern 4: 导入错误
 
-本仓库不使用 `@/*` 之类的 TS path alias；跨 package 靠 workspace 包名（`@<scope>/*`），同 package 内用相对路径。
+本仓库不使用 `@/*` 之类的 TS path alias；跨 package 靠 workspace 包名（`@real-demo/*`），同 package 内用相对路径。
 
 ```typescript
-// ❌ ERROR: Cannot find module '@<scope>/shared'
-import { CreateSpaceDto } from "@<scope>/shared";
+// ❌ ERROR: Cannot find module '@real-demo/shared'
+import { CreateSpaceDto } from "@real-demo/shared";
 
 // ✅ FIX 1: 确认 package.json 已声明依赖
 // apps/web/package.json
 // {
-//   "dependencies": { "@<scope>/shared": "workspace:*" }
+//   "dependencies": { "@real-demo/shared": "workspace:*" }
 // }
 // 然后在仓库根执行
 pnpm install;
@@ -233,14 +233,14 @@ const Component = ({ children }: Props) => {
 ### 模块解析（Monorepo）
 
 ```typescript
-// ❌ ERROR: Cannot find module '@<scope>/shared'
-import { CreateSpaceDto } from '@<scope>/shared'
+// ❌ ERROR: Cannot find module '@real-demo/shared'
+import { CreateSpaceDto } from '@real-demo/shared'
 
 // ✅ FIX: 检查 package.json 依赖
 // apps/web/package.json
 {
   "dependencies": {
-    "@<scope>/shared": "workspace:*"
+    "@real-demo/shared": "workspace:*"
   }
 }
 
@@ -320,14 +320,14 @@ rm -rf apps/server/dist
 make build
 
 # 单个 workspace 聚焦 typecheck（不要尝试单文件 tsc，本仓库用 project references）
-pnpm --filter @<scope>/web typecheck
-pnpm --filter @<scope>/server typecheck
+pnpm --filter @real-demo/web typecheck
+pnpm --filter @real-demo/server typecheck
 
 # 安装缺失依赖
 pnpm install
 
 # 更新 TypeScript
-pnpm add -D typescript@latest --filter @<scope>/web
+pnpm add -D typescript@latest --filter @real-demo/web
 ````
 
 ## 成功标准

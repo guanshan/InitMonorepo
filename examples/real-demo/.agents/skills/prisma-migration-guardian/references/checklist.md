@@ -16,7 +16,7 @@ Action:
 
 1. fetch current branch upstream
 2. confirm upstream did not change `prisma/**` unexpectedly
-3. run `pnpm --filter @<scope>/server db:migrate:dev --name <name>`
+3. run `pnpm --filter @real-demo/server db:migrate:dev --name <name>`
 
 ### Case 2: local migration folder exists, upstream unchanged in `prisma/**`
 
@@ -41,7 +41,7 @@ Action:
 Use:
 
 ```bash
-pnpm --filter @<scope>/server exec prisma migrate dev --create-only \
+pnpm --filter @real-demo/server exec prisma migrate dev --create-only \
   --schema prisma/schema.prisma --name <name>
 ```
 
@@ -102,10 +102,10 @@ git fetch --prune
 git diff --name-only HEAD..@{upstream} -- apps/server/prisma
 git status --short apps/server/prisma
 python3 .agents/skills/prisma-migration-guardian/scripts/check_prisma_chain.py .
-pnpm --filter @<scope>/server db:migrate:dev --name <name>
-pnpm --filter @<scope>/server exec prisma migrate dev --create-only \
+pnpm --filter @real-demo/server db:migrate:dev --name <name>
+pnpm --filter @real-demo/server exec prisma migrate dev --create-only \
   --schema prisma/schema.prisma --name <name>
-pnpm --filter @<scope>/server exec prisma migrate status --schema prisma/schema.prisma
+pnpm --filter @real-demo/server exec prisma migrate status --schema prisma/schema.prisma
 make db-migrate
 make db-reset
 ```

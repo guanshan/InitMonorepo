@@ -14,9 +14,9 @@ This skill is loaded inside this monorepo. When the user's request targets anyth
 
 - React 19 + React Router v7 (SPA mode) + Vite; no Next.js, no SSR.
 - CSS Modules + semantic CSS variables from `packages/ui/src/tokens.css`. Do **not** assume Tailwind, shadcn/ui, styled-components, or Emotion are available.
-- Shared primitives live in `@<scope>/ui`; prefer composing them over hand-rolling equivalents.
+- Shared primitives live in `@real-demo/ui`; prefer composing them over hand-rolling equivalents.
 - All user-visible copy must go through i18n (`apps/web/src/locales/en.ts` and `zh.ts`, kept in full alignment).
-- Server data flows through `@<scope>/sdk` + TanStack Query. Zustand is only for local UI preference state.
+- Server data flows through `@real-demo/sdk` + TanStack Query. Zustand is only for local UI preference state.
 - Accessibility is non-negotiable: labeled controls, visible focus rings, loading/empty/error states, Radix-managed dialog focus.
 
 If the user explicitly asks for a standalone artifact, poster, or non-repo HTML/CSS page that has no intention of landing in `apps/web`, the aesthetic freedom below applies fully. For anything that will touch the app itself, also consult `ui-ux-pro-max` and its `references/local-ui.md` for token-level details.

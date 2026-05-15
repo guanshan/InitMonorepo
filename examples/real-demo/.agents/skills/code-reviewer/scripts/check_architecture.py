@@ -165,7 +165,7 @@ def check_frontend_boundaries(file_path: Path, imports: Iterable[tuple[int, str]
                     lines[line_number - 1],
                 )
             )
-        if "apps/server" in target or target.startswith("@<scope>/server"):
+        if "apps/server" in target or target.startswith("@real-demo/server"):
             issues.append(
                 issue(
                     file_path,

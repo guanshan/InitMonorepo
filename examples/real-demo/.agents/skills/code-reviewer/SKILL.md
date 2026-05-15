@@ -15,7 +15,7 @@ Review code changes for this monorepo, with findings focused on real regressions
 - Bugs and behavioral regressions first
 - DDD/FSD boundary compliance
 - UI consistency with semantic tokens and accessibility rules
-- Correct data flow (`@<scope>/sdk` + TanStack Query, not ad hoc fetch/state)
+- Correct data flow (`@real-demo/sdk` + TanStack Query, not ad hoc fetch/state)
 - Security and contract risks
 - Missing or insufficient validation/tests
 
@@ -98,7 +98,7 @@ Automated scripts are a pre-screen, not the review itself. Treat script output a
 ### Frontend
 
 - FSD boundaries still make sense (`pages`, `widgets`, `features`, `entities`, `shared`)
-- `apps/web` only depends on `@<scope>/sdk`, `@<scope>/shared`, `@<scope>/ui`
+- `apps/web` only depends on `@real-demo/sdk`, `@real-demo/shared`, `@real-demo/ui`
 - no Prisma/server-internal imports in frontend
 - server state stays in TanStack Query, not Zustand
 - user-facing strings go through `apps/web/src/locales/en.ts` and `zh.ts`

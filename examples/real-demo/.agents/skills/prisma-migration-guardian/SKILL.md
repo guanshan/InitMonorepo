@@ -87,7 +87,7 @@ If local artifacts are stale:
 If the migration is purely a schema diff:
 
 ```bash
-pnpm --filter @<scope>/server db:migrate:dev --name <migration_name>
+pnpm --filter @real-demo/server db:migrate:dev --name <migration_name>
 ```
 
 This creates the next `NNNN_<migration_name>/migration.sql` folder, applies it to the local database, and updates `_prisma_migrations`.
@@ -97,7 +97,7 @@ This creates the next `NNNN_<migration_name>/migration.sql` folder, applies it t
 If the migration is data-only or order-sensitive, do **not** let Prisma auto-apply it. Instead:
 
 ```bash
-pnpm --filter @<scope>/server exec prisma migrate dev --create-only \
+pnpm --filter @real-demo/server exec prisma migrate dev --create-only \
   --schema prisma/schema.prisma --name <migration_name>
 ```
 
@@ -106,7 +106,7 @@ pnpm --filter @<scope>/server exec prisma migrate dev --create-only \
 3. Then apply:
 
 ```bash
-pnpm --filter @<scope>/server db:migrate:dev
+pnpm --filter @real-demo/server db:migrate:dev
 ```
 
 #### Mixed migration
@@ -152,7 +152,7 @@ git status --short apps/server/prisma
 Optionally verify the migration history still matches the database and the current `schema.prisma` baseline:
 
 ```bash
-pnpm --filter @<scope>/server exec prisma migrate status --schema prisma/schema.prisma
+pnpm --filter @real-demo/server exec prisma migrate status --schema prisma/schema.prisma
 ```
 
 or, if a clean database check is needed:

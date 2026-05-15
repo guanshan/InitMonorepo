@@ -14,30 +14,30 @@ description: >
 ## 1) When to Use
 
 - New/updated UI copy that needs i18n
-- Raw keys rendered in UI (e.g., `intent.table.name`) or hardcoded zh/en text
+- Raw keys rendered in UI (e.g., `admin.users.title`) or hardcoded zh/en text
 - Missing translations for toast/headers/placeholders/buttons/empty states/pagination
 - en/zh divergence or mismatched placeholders
 - Need a quick audit for untranslated pages/components
 
 ## 2) Locations
 
-- Locales: `apps/web/src/locales/en.ts` 和 `apps/web/src/locales/zh.ts`（扁平单文件，按 feature 分组的对象结构）
+- Locales: `apps/web/src/locales/en.ts` 和 `apps/web/src/locales/zh.ts`（单文件，扁平点分 key，例如 `"auth.error.title": "..."`）
 - 两份文件的 key 必须完全对齐，新增 key 时同步维护两份
-- Common namespaces: 按 feature 分组的顶层 key（如 `skills.*`、`spaces.*`、`common.*` 等）
+- Real namespaces in this repo: `app.*`、`auth.*`、`admin.*`、`common.*`、`errors.*`、`home.*`、`login.*`、`modelProvider.*`、`modelStatus.*`、`nav.*`、`notFound.*`、`playground.*`、`roles.*`、`settings.*`、`sidebar.*`、`theme.*`、`userMenu.*`、`validation.*` 等
 
 ## 3) Naming Rules
 
-1. Namespace prefix = module/page (e.g., `intent.*`, `fulfillment.*`)
+1. Namespace prefix = module/page (e.g., `auth.*`, `admin.*`, `playground.*`)
 2. Typical groups: `table` / `form` / `toast` / `dialog` / `filter` / `pagination` / `tooltip` / `stats` / `status` / `action` / `placeholder`
 3. Placeholders use `{{var}}` (counts prefer `{{count}}`); keep en/zh keys and params aligned
 4. No hardcoded copy in components; always use semantic keys with `t()`
 
 ## 4) Namespace Usage (react-i18next)
 
-- Resources live under default namespace `translation`, with features as top-level keys: `translation: { skills, spaces, common, ... }`.
+- Resources are wired in `apps/web/src/locales/resources.ts` as `{ en: { translation: en }, zh: { translation: zh } }`; the default namespace is `translation`, and keys are flat dotted strings (e.g., `"auth.error.title"`).
 - Preferred patterns:
-  - `useTranslation('translation', { keyPrefix: 'skills' })` + `t('title')`
-  - or `useTranslation()` + fully qualified `t('skills.title')`
+  - `useTranslation('translation', { keyPrefix: 'auth' })` + `t('error.title')`
+  - or `useTranslation()` + fully qualified `t('auth.error.title')`
 - Locale files: `apps/web/src/locales/en.ts` 和 `apps/web/src/locales/zh.ts`，两份 key 必须完全对齐。
 - When migrating, change the hook instead of rewriting every key to keep consistency.
 
@@ -53,15 +53,15 @@ description: >
 ## 6) Quick Detection
 
 - Search hardcoded zh/en strings in JSX (outside locales)
-- Search raw keys (`intent.`/`fulfillment.`/`dashboard.`) rendered in UI
+- Search raw keys (`auth.`/`admin.`/`playground.`/`settings.`) rendered in UI
 - Search `TODO i18n` / `FIXME i18n` / `// i18n`
 - Check headers/buttons/placeholders/toasts not wrapped with `t()`
 - Check placeholder mismatches (`{{...}}` in copy vs params passed to `t`)
 
 ## 7) Common Pitfalls
 
-- Missing namespace prefix: `t('form.tags')` should be `t('intent.form.tags')`
-- I18n bootstrap wiring in `apps/web/src/shared/lib/i18n.ts` not aligned with the current resource shape
+- Missing namespace prefix: `t('error.title')` should be `t('auth.error.title')`
+- I18n bootstrap wiring in `apps/web/src/shared/lib/i18n.ts` not aligned with the current resource shape (`resources` is composed in `apps/web/src/locales/resources.ts`)
 - en/zh missing or placeholder name mismatches (`{{count}}` vs `{{total}}`)
 - Plurals/counts: at least provide `{{count}}`; add plural handling as needed
 

@@ -182,29 +182,29 @@ app → pages → widgets → features → entities → shared
 ### 代码示例
 
 ```typescript
-// entities/spaces/api-hooks.ts — server state
-export function useSpaces() {
+// entities/providers/api-hooks.ts — server state
+export function useProviders() {
   return useQuery({
-    queryKey: ['spaces'],
-    queryFn: () => spacesApi.list(),
+    queryKey: ['providers'],
+    queryFn: () => providersApi.list(),
   });
 }
 
-// features/create-space/ui/CreateSpaceForm.tsx — mutation
-export function CreateSpaceForm() {
+// features/create-provider/ui/CreateProviderForm.tsx — mutation
+export function CreateProviderForm() {
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreateSpaceDto) => spacesApi.create(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['spaces'] }),
+    mutationFn: (data: CreateProviderDto) => providersApi.create(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['providers'] }),
   });
   // ...
 }
 
-// pages/spaces/SpacesPage.tsx — assembly only
-export function SpacesPage() {
+// pages/providers/ProvidersPage.tsx — assembly only
+export function ProvidersPage() {
   return (
     <div className="flex flex-col h-dvh min-h-0">
-      <SpacesHeader />
-      <SpacesList />
+      <ProvidersHeader />
+      <ProvidersList />
     </div>
   );
 }
@@ -215,8 +215,8 @@ export function SpacesPage() {
 ## Monorepo 边界
 
 ```
-apps/web     → 只能依赖 @<scope>/sdk、@<scope>/shared、@<scope>/ui
-apps/server  → 只能依赖 @<scope>/shared（不能依赖 sdk 或 ui）
+apps/web     → 只能依赖 @real-demo/sdk、@real-demo/shared、@real-demo/ui
+apps/server  → 只能依赖 @real-demo/shared（不能依赖 sdk 或 ui）
 packages/shared → 跨端共享 contracts、schemas、constants
 packages/sdk    → 自动生成的 OpenAPI client + 手写 hooks（分离）
 packages/ui     → 共享 tokens、样式入口、展示型 primitives
@@ -330,7 +330,7 @@ rg "PrismaClient|@prisma/client" apps/web/src --type ts
 
 - [ ] 确认功能属于哪一 FSD 层
 - [ ] Server state 用 TanStack Query，本地 UI 状态用 Zustand（或 useState）
-- [ ] 通过 `@<scope>/sdk` 调用 API，不手写重复的 API client
+- [ ] 通过 `@real-demo/sdk` 调用 API，不手写重复的 API client
 - [ ] 面向用户的文案全部走 i18n（`locales/en.ts` 和 `locales/zh.ts` 同步更新）
 - [ ] 组件使用语义化 CSS variables（不硬编码颜色/圆角/间距）
 - [ ] 表单 label、focus、loading/empty/error 状态可访问
@@ -362,7 +362,7 @@ rg "process\.env\." apps/server/src --type ts | grep -v "env\.ts"
 git diff packages/sdk/src/generated
 
 # 检查 i18n 对齐（两份资源 key 数量；locale 文件是 .ts，不能 require，用 tsx）
-pnpm --silent --filter @<scope>/web exec tsx -e "import('./src/locales/en.ts').then(async e => { const z = await import('./src/locales/zh.ts'); console.log('en', Object.keys(e.en).length, 'zh', Object.keys(z.zh).length); })"
+pnpm --silent --filter @real-demo/web exec tsx -e "import('./src/locales/en.ts').then(async e => { const z = await import('./src/locales/zh.ts'); console.log('en', Object.keys(e.en).length, 'zh', Object.keys(z.zh).length); })"
 ```
 
 ---

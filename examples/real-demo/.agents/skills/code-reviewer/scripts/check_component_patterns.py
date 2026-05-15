@@ -50,7 +50,7 @@ def check_modal_titles(file_path: Path, content: str) -> list[dict[str, object]]
                 )
                 break
 
-    if "@<scope>/ui" in content and "<Modal" in content:
+    if "@real-demo/ui" in content and "<Modal" in content:
         for i, line in enumerate(lines, 1):
             if "<Modal" not in line:
                 continue
@@ -61,7 +61,7 @@ def check_modal_titles(file_path: Path, content: str) -> list[dict[str, object]]
                         file_path,
                         i,
                         "WARNING",
-                        "Modal from @<scope>/ui should provide a title prop for accessibility.",
+                        "Modal from @real-demo/ui should provide a title prop for accessibility.",
                         line,
                     )
                 )
@@ -153,7 +153,7 @@ def check_frontend_fetch(file_path: Path, content: str) -> list[dict[str, object
                     file_path,
                     i,
                     "WARNING",
-                    "Direct fetch() detected in frontend code. Prefer @<scope>/sdk or shared request utilities.",
+                    "Direct fetch() detected in frontend code. Prefer @real-demo/sdk or shared request utilities.",
                     line,
                 )
             )

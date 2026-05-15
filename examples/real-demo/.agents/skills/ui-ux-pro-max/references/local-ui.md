@@ -5,9 +5,9 @@ Use this reference before applying generic UI/UX Pro Max recommendations to this
 ## Stack Baseline
 
 - Frontend: React 19 + React Router v7 + Vite
-- Data: `@<scope>/sdk` + TanStack Query
+- Data: `@real-demo/sdk` + TanStack Query
 - Local UI state: Zustand only for UI preference/state, not server data
-- Shared UI: `@<scope>/ui`
+- Shared UI: `@real-demo/ui`
 - Styling: CSS Modules + semantic CSS custom properties
 - Theme tokens: `packages/ui/src/tokens.css`
 - Accessibility: Radix dialog focus handling, visible focus, readable feedback states
@@ -19,7 +19,7 @@ Use this reference before applying generic UI/UX Pro Max recommendations to this
 - Prefer CSS Modules and semantic CSS variables.
 - Do not assume Tailwind or shadcn/ui is available.
 - Raw colors belong in token sources, not business components.
-- Reuse existing `@<scope>/ui` primitives when possible.
+- Reuse existing `@real-demo/ui` primitives when possible.
 
 ### Architecture
 
@@ -30,7 +30,7 @@ Use this reference before applying generic UI/UX Pro Max recommendations to this
 
 ### Data Flow
 
-- Frontend requests should go through `@<scope>/sdk`.
+- Frontend requests should go through `@real-demo/sdk`.
 - Server state belongs in TanStack Query.
 - Do not introduce Prisma or server-internal types into `apps/web`.
 
@@ -52,6 +52,6 @@ Use this reference before applying generic UI/UX Pro Max recommendations to this
 When a search result suggests a pattern:
 
 1. Translate the idea into CSS Modules and semantic tokens.
-2. Map repeated UI into `@<scope>/ui` or local shared primitives.
+2. Map repeated UI into `@real-demo/ui` or local shared primitives.
 3. Check whether the pattern belongs in `pages`, `features`, `entities`, or `shared`.
 4. Add i18n and accessibility before considering the design "done".

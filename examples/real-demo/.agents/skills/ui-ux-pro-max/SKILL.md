@@ -24,7 +24,7 @@ That reference explains the local rules that always override generic design sugg
 
 - React 19 + React Router v7
 - CSS Modules and semantic CSS variables
-- `@<scope>/ui` primitives and `packages/ui/src/tokens.css`
+- `@real-demo/ui` primitives and `packages/ui/src/tokens.css`
 - i18n in `apps/web/src/locales/en.ts` and `zh.ts`
 - TanStack Query for server state
 - accessibility and Storybook expectations
@@ -119,6 +119,6 @@ Other stacks remain available for inspiration or comparison, but they are not th
 ## Practical Guidance
 
 - Use this skill to inform design, not to bypass repo architecture.
-- Prefer existing `@<scope>/ui` primitives before inventing new ones.
+- Prefer existing `@real-demo/ui` primitives before inventing new ones.
 - Treat search results as ingredients; combine them with local constraints from `references/local-ui.md`.
 - When reviewing an existing UI, use `--stack local` first, then `--domain ux` or `--domain style`.
