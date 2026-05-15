@@ -1,5 +1,13 @@
 import "reflect-metadata";
 
+// CryptoService refuses to boot without REAL_DEMO_ENCRYPTION_KEY (correctly;
+// no plaintext fallback in prod). Stub it here so AppModule can wire up under
+// the test harness. The value never encrypts anything real — FakePrismaService
+// bypasses the provider table.
+process.env.REAL_DEMO_ENCRYPTION_KEY =
+  process.env.REAL_DEMO_ENCRYPTION_KEY ??
+  Buffer.alloc(32, 1).toString("base64");
+
 import type { NestExpressApplication } from "@nestjs/platform-express";
 
 import { Test } from "@nestjs/testing";

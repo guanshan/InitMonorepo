@@ -11,6 +11,22 @@ setup: ## One-time bootstrap: copy .env files, install deps, start infra, migrat
 	@server_env_created=0; web_env_created=0; \
 	if [ ! -f apps/server/.env ]; then cp apps/server/.env.example apps/server/.env; server_env_created=1; fi; \
 	if [ ! -f apps/web/.env ]; then cp apps/web/.env.example apps/web/.env; web_env_created=1; fi; \
+	if [ "$$server_env_created" = "1" ]; then \
+	  if command -v openssl >/dev/null 2>&1; then \
+	    key=$$(openssl rand -base64 32); \
+	    if [ -z "$$key" ]; then \
+	      echo "  WARNING: openssl rand returned empty — leaving REAL_DEMO_ENCRYPTION_KEY placeholder; server will refuse to boot until you fix it."; \
+	    else \
+	      esc=$$(printf '%s' "$$key" | sed -e 's/[\/&|]/\\&/g'); \
+	      sed -i.bak "s|^REAL_DEMO_ENCRYPTION_KEY=.*|REAL_DEMO_ENCRYPTION_KEY=$$esc|" apps/server/.env && rm -f apps/server/.env.bak; \
+	      echo "  Generated a fresh REAL_DEMO_ENCRYPTION_KEY into apps/server/.env."; \
+	      echo "  WARNING: back up this key. Losing it makes every encrypted provider API key unrecoverable."; \
+	    fi; \
+	  else \
+	    echo "  WARNING: openssl not found; REAL_DEMO_ENCRYPTION_KEY left as the placeholder. The server will refuse to boot."; \
+	    echo "          Install openssl, or set the value manually: REAL_DEMO_ENCRYPTION_KEY=\$$(openssl rand -base64 32)"; \
+	  fi; \
+	fi; \
 	if [ "$$server_env_created" = "1" ] || [ "$$web_env_created" = "1" ]; then \
 	  echo ""; \
 	  echo "  Created fresh .env file(s) from .env.example."; \

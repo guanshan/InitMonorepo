@@ -1,4 +1,11 @@
-import { ApiRequestError } from "@real-demo/sdk/types";
+import {
+  ApiRequestError,
+  changePassword as sdkChangePassword,
+  getCurrentUser as sdkGetCurrentUser,
+  issueSignInCaptcha as sdkIssueSignInCaptcha,
+  signIn as sdkSignIn,
+  signOut as sdkSignOut,
+} from "@real-demo/sdk";
 import type {
   CaptchaChallenge,
   DevAccount,
@@ -7,11 +14,6 @@ import type {
 
 import { apiFetch } from "./sdk-client";
 
-interface ApiSuccessResponse<T> {
-  success: true;
-  data: T;
-}
-
 interface SignInInput {
   email: string;
   password: string;
@@ -19,30 +21,25 @@ interface SignInInput {
   captchaAnswer: string;
 }
 
+type SdkEnvelope<T> = { success: true; data: T };
+
 export async function signIn(input: SignInInput): Promise<void> {
-  await apiFetch("/api/v1/auth/sign-in", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
+  await sdkSignIn(input);
 }
 
 export async function fetchSignInCaptcha(options?: {
   signal?: AbortSignal;
 }): Promise<CaptchaChallenge> {
-  const body = await apiFetch<ApiSuccessResponse<CaptchaChallenge>>(
-    "/api/v1/auth/captcha",
-    {
-      method: "POST",
-      ...(options?.signal ? { signal: options.signal } : {}),
-    },
+  const response = await sdkIssueSignInCaptcha(
+    options?.signal ? { signal: options.signal } : undefined,
   );
+  const body = response.data as unknown as SdkEnvelope<CaptchaChallenge>;
   return body.data;
 }
 
 export async function signOut(): Promise<void> {
   try {
-    await apiFetch("/api/v1/auth/sign-out", { method: "POST" });
+    await sdkSignOut();
   } catch {
     // sign-out is best-effort — the cookie is cleared server-side when the
     // session is still valid, and the client state is reset regardless.
@@ -53,10 +50,10 @@ export async function fetchCurrentUser(options?: {
   signal?: AbortSignal;
 }): Promise<SessionUser | null> {
   try {
-    const body = await apiFetch<ApiSuccessResponse<SessionUser>>(
-      "/api/v1/auth/me",
+    const response = await sdkGetCurrentUser(
       options?.signal ? { signal: options.signal } : undefined,
     );
+    const body = response.data as unknown as SdkEnvelope<SessionUser>;
     return body.data;
   } catch (error) {
     if (
@@ -73,18 +70,17 @@ export async function changePassword(
   currentPassword: string,
   newPassword: string,
 ): Promise<void> {
-  await apiFetch("/api/v1/auth/change-password", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ currentPassword, newPassword }),
-  });
+  await sdkChangePassword({ currentPassword, newPassword });
 }
 
 export async function fetchDevAccounts(options?: {
   signal?: AbortSignal;
 }): Promise<DevAccount[]> {
+  // /api/v1/auth/dev-accounts is marked @ApiExcludeEndpoint, so it does not
+  // appear in the OpenAPI document and no SDK function is generated for it.
+  // Keep this on the raw apiFetch path until we decide to expose the route.
   try {
-    const body = await apiFetch<ApiSuccessResponse<{ accounts: DevAccount[] }>>(
+    const body = await apiFetch<SdkEnvelope<{ accounts: DevAccount[] }>>(
       "/api/v1/auth/dev-accounts",
       options?.signal ? { signal: options.signal } : undefined,
     );

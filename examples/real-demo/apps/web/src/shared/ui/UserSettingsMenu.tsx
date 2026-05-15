@@ -10,12 +10,17 @@ import { useThemeStore } from "../store/theme-store";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 import {
   CheckIcon,
+  CpuIcon,
   GlobeIcon,
   KeyIcon,
   LogOutIcon,
   MonitorIcon,
   MoonIcon,
+  ServerIcon,
+  SettingsIcon,
+  SparklesIcon,
   SunIcon,
+  UsersIcon,
 } from "./icons";
 import styles from "./UserSettingsMenu.module.css";
 
@@ -50,6 +55,12 @@ export const UserSettingsMenu = ({ open, onClose, anchorRef }: Props) => {
   const preference = useThemeStore((s) => s.preference);
   const setPreference = useThemeStore((s) => s.setPreference);
   const logout = useAuthStore((s) => s.logout);
+  const user = useAuthStore((s) => s.user);
+  const role = user?.role;
+  const canManageUsers = role === "SUPER_ADMIN";
+  const canManageSettings = role === "SUPER_ADMIN" || role === "ADMIN";
+  const canManageProviders = role === "SUPER_ADMIN" || role === "ADMIN";
+  const canManageModels = role === "SUPER_ADMIN" || role === "ADMIN";
   const menuRef = useRef<HTMLDivElement>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -201,6 +212,108 @@ export const UserSettingsMenu = ({ open, onClose, anchorRef }: Props) => {
               ))}
             </div>
           )}
+
+          {canManageUsers ||
+          canManageSettings ||
+          canManageProviders ||
+          canManageModels ? (
+            <div className={styles.separator} role="separator" />
+          ) : null}
+
+          {canManageUsers ? (
+            <button
+              className={styles.menuItem}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onClose();
+                navigate("/users");
+              }}
+            >
+              <span className={styles.menuItemIcon}>
+                <UsersIcon />
+              </span>
+              <span className={styles.menuItemLabel}>
+                {t("userMenu.users")}
+              </span>
+            </button>
+          ) : null}
+
+          {canManageSettings ? (
+            <button
+              className={styles.menuItem}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onClose();
+                navigate("/settings");
+              }}
+            >
+              <span className={styles.menuItemIcon}>
+                <SettingsIcon />
+              </span>
+              <span className={styles.menuItemLabel}>
+                {t("userMenu.settings.entry")}
+              </span>
+            </button>
+          ) : null}
+
+          {canManageProviders ? (
+            <button
+              className={styles.menuItem}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onClose();
+                navigate("/providers");
+              }}
+            >
+              <span className={styles.menuItemIcon}>
+                <ServerIcon />
+              </span>
+              <span className={styles.menuItemLabel}>
+                {t("userMenu.providers")}
+              </span>
+            </button>
+          ) : null}
+
+          {canManageModels ? (
+            <button
+              className={styles.menuItem}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onClose();
+                navigate("/models");
+              }}
+            >
+              <span className={styles.menuItemIcon}>
+                <CpuIcon />
+              </span>
+              <span className={styles.menuItemLabel}>
+                {t("userMenu.models")}
+              </span>
+            </button>
+          ) : null}
+
+          {canManageModels ? (
+            <button
+              className={styles.menuItem}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onClose();
+                navigate("/playground");
+              }}
+            >
+              <span className={styles.menuItemIcon}>
+                <SparklesIcon />
+              </span>
+              <span className={styles.menuItemLabel}>
+                {t("userMenu.playground")}
+              </span>
+            </button>
+          ) : null}
 
           <div className={styles.separator} role="separator" />
 

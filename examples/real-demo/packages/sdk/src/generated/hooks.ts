@@ -21,14 +21,42 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdminUserListResponseDtoOutput,
+  AdminUserMutationResponseDtoOutput,
+  AdminUserResponseDtoOutput,
   AuthApiFailureDto,
   AuthStateResponseDtoOutput,
   CaptchaChallengeResponseDtoOutput,
   ChangePasswordDto,
   ChangePasswordResponseDtoOutput,
+  ConfigSnapshotResponseDtoOutput,
+  CreateAdminUserDto,
+  CreateModelDto,
+  CreateProviderDto,
+  DiscoverModelsDto,
+  DiscoverModelsResponseDtoOutput,
   IoaStatusResponseDtoOutput,
+  ListModelsParams,
+  ListUsersParams,
+  ModelListResponseDtoOutput,
+  ModelResponseDtoOutput,
+  ModelsApiFailureDto,
+  MutationResponseDtoOutput,
+  PlaygroundRunDto,
+  PlaygroundRunResponseDtoOutput,
+  ProviderListResponseDtoOutput,
+  ProviderResponseDtoOutput,
+  ResetAdminUserPasswordDto,
   SessionUserResponseDtoOutput,
-  SignInDto
+  SettingsApiFailureDto,
+  SignInDto,
+  SystemSettingsResponseDtoOutput,
+  UpdateAdminUserDto,
+  UpdateModelDto,
+  UpdateProviderDto,
+  UpdateSystemSettingsDto,
+  UsersApiFailureDto,
+  VerifyModelResponseDtoOutput
 } from './model';
 
 import { customFetcher } from '../runtime/fetcher';
@@ -750,6 +778,2733 @@ export function useGetIoaLoginStatus<TData = Awaited<ReturnType<typeof getIoaLog
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetIoaLoginStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type listUsersResponse200 = {
+  data: AdminUserListResponseDtoOutput
+  status: 200
+}
+
+export type listUsersResponse401 = {
+  data: UsersApiFailureDto
+  status: 401
+}
+
+export type listUsersResponseSuccess = (listUsersResponse200) & {
+  headers: Headers;
+};
+export type listUsersResponseError = (listUsersResponse401) & {
+  headers: Headers;
+};
+
+export type listUsersResponse = (listUsersResponseSuccess | listUsersResponseError)
+
+export const getListUsersUrl = (params?: ListUsersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/users?${stringifiedParams}` : `/api/v1/users`
+}
+
+/**
+ * @summary List users
+ */
+export const listUsers = async (params?: ListUsersParams, options?: RequestInit): Promise<listUsersResponse> => {
+
+  return customFetcher<listUsersResponse>(getListUsersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListUsersQueryKey = (params?: ListUsersParams,) => {
+    return [
+    `/api/v1/users`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListUsersQueryOptions = <TData = Awaited<ReturnType<typeof listUsers>>, TError = UsersApiFailureDto>(params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListUsersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUsers>>> = ({ signal }) => listUsers(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListUsersQueryResult = NonNullable<Awaited<ReturnType<typeof listUsers>>>
+export type ListUsersQueryError = UsersApiFailureDto
+
+
+export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = UsersApiFailureDto>(
+ params: undefined |  ListUsersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listUsers>>,
+          TError,
+          Awaited<ReturnType<typeof listUsers>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = UsersApiFailureDto>(
+ params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listUsers>>,
+          TError,
+          Awaited<ReturnType<typeof listUsers>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = UsersApiFailureDto>(
+ params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List users
+ */
+
+export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TError = UsersApiFailureDto>(
+ params?: ListUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListUsersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type createUserResponse201 = {
+  data: AdminUserResponseDtoOutput
+  status: 201
+}
+
+export type createUserResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type createUserResponse409 = {
+  data: UsersApiFailureDto
+  status: 409
+}
+
+export type createUserResponseSuccess = (createUserResponse201) & {
+  headers: Headers;
+};
+export type createUserResponseError = (createUserResponse400 | createUserResponse409) & {
+  headers: Headers;
+};
+
+export type createUserResponse = (createUserResponseSuccess | createUserResponseError)
+
+export const getCreateUserUrl = () => {
+
+
+
+
+  return `/api/v1/users`
+}
+
+/**
+ * @summary Create a new user
+ */
+export const createUser = async (createAdminUserDto: CreateAdminUserDto, options?: RequestInit): Promise<createUserResponse> => {
+
+  return customFetcher<createUserResponse>(getCreateUserUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createAdminUserDto)
+  }
+);}
+
+
+
+
+
+export const getCreateUserQueryKey = (createAdminUserDto?: CreateAdminUserDto,) => {
+    return [
+    'POST', `/api/v1/users`, createAdminUserDto
+    ] as const;
+    }
+
+
+export const getCreateUserQueryOptions = <TData = Awaited<ReturnType<typeof createUser>>, TError = UsersApiFailureDto>(createAdminUserDto: CreateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCreateUserQueryKey(createAdminUserDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof createUser>>> = ({ signal }) => createUser(createAdminUserDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof createUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CreateUserQueryResult = NonNullable<Awaited<ReturnType<typeof createUser>>>
+export type CreateUserQueryError = UsersApiFailureDto
+
+
+export function useCreateUser<TData = Awaited<ReturnType<typeof createUser>>, TError = UsersApiFailureDto>(
+ createAdminUserDto: CreateAdminUserDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof createUser>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof createUser>>,
+          TError,
+          Awaited<ReturnType<typeof createUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCreateUser<TData = Awaited<ReturnType<typeof createUser>>, TError = UsersApiFailureDto>(
+ createAdminUserDto: CreateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createUser>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof createUser>>,
+          TError,
+          Awaited<ReturnType<typeof createUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCreateUser<TData = Awaited<ReturnType<typeof createUser>>, TError = UsersApiFailureDto>(
+ createAdminUserDto: CreateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Create a new user
+ */
+
+export function useCreateUser<TData = Awaited<ReturnType<typeof createUser>>, TError = UsersApiFailureDto>(
+ createAdminUserDto: CreateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCreateUserQueryOptions(createAdminUserDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type getUserResponse200 = {
+  data: AdminUserResponseDtoOutput
+  status: 200
+}
+
+export type getUserResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type getUserResponseSuccess = (getUserResponse200) & {
+  headers: Headers;
+};
+export type getUserResponseError = (getUserResponse404) & {
+  headers: Headers;
+};
+
+export type getUserResponse = (getUserResponseSuccess | getUserResponseError)
+
+export const getGetUserUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}`
+}
+
+/**
+ * @summary Get a user by id
+ */
+export const getUser = async (userId: string, options?: RequestInit): Promise<getUserResponse> => {
+
+  return customFetcher<getUserResponse>(getGetUserUrl(userId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetUserQueryKey = (userId: string,) => {
+    return [
+    `/api/v1/users/${userId}`
+    ] as const;
+    }
+
+
+export const getGetUserQueryOptions = <TData = Awaited<ReturnType<typeof getUser>>, TError = UsersApiFailureDto>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUserQueryKey(userId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUser>>> = ({ signal }) => getUser(userId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: userId !== null && userId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUserQueryResult = NonNullable<Awaited<ReturnType<typeof getUser>>>
+export type GetUserQueryError = UsersApiFailureDto
+
+
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = UsersApiFailureDto>(
+ userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUser>>,
+          TError,
+          Awaited<ReturnType<typeof getUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = UsersApiFailureDto>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUser>>,
+          TError,
+          Awaited<ReturnType<typeof getUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = UsersApiFailureDto>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a user by id
+ */
+
+export function useGetUser<TData = Awaited<ReturnType<typeof getUser>>, TError = UsersApiFailureDto>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUserQueryOptions(userId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type updateUserResponse200 = {
+  data: AdminUserResponseDtoOutput
+  status: 200
+}
+
+export type updateUserResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type updateUserResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type updateUserResponseSuccess = (updateUserResponse200) & {
+  headers: Headers;
+};
+export type updateUserResponseError = (updateUserResponse400 | updateUserResponse404) & {
+  headers: Headers;
+};
+
+export type updateUserResponse = (updateUserResponseSuccess | updateUserResponseError)
+
+export const getUpdateUserUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}`
+}
+
+/**
+ * @summary Update an existing user
+ */
+export const updateUser = async (userId: string,
+    updateAdminUserDto: UpdateAdminUserDto, options?: RequestInit): Promise<updateUserResponse> => {
+
+  return customFetcher<updateUserResponse>(getUpdateUserUrl(userId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateAdminUserDto)
+  }
+);}
+
+
+
+
+
+export const getUpdateUserQueryKey = (userId: string,
+    updateAdminUserDto?: UpdateAdminUserDto,) => {
+    return [
+    'PATCH', `/api/v1/users/${userId}`, updateAdminUserDto
+    ] as const;
+    }
+
+
+export const getUpdateUserQueryOptions = <TData = Awaited<ReturnType<typeof updateUser>>, TError = UsersApiFailureDto>(userId: string,
+    updateAdminUserDto: UpdateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getUpdateUserQueryKey(userId,updateAdminUserDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof updateUser>>> = ({ signal }) => updateUser(userId,updateAdminUserDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: userId !== null && userId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof updateUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type UpdateUserQueryResult = NonNullable<Awaited<ReturnType<typeof updateUser>>>
+export type UpdateUserQueryError = UsersApiFailureDto
+
+
+export function useUpdateUser<TData = Awaited<ReturnType<typeof updateUser>>, TError = UsersApiFailureDto>(
+ userId: string,
+    updateAdminUserDto: UpdateAdminUserDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateUser>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateUser>>,
+          TError,
+          Awaited<ReturnType<typeof updateUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateUser<TData = Awaited<ReturnType<typeof updateUser>>, TError = UsersApiFailureDto>(
+ userId: string,
+    updateAdminUserDto: UpdateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateUser>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateUser>>,
+          TError,
+          Awaited<ReturnType<typeof updateUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateUser<TData = Awaited<ReturnType<typeof updateUser>>, TError = UsersApiFailureDto>(
+ userId: string,
+    updateAdminUserDto: UpdateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Update an existing user
+ */
+
+export function useUpdateUser<TData = Awaited<ReturnType<typeof updateUser>>, TError = UsersApiFailureDto>(
+ userId: string,
+    updateAdminUserDto: UpdateAdminUserDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getUpdateUserQueryOptions(userId,updateAdminUserDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type deleteUserResponse200 = {
+  data: AdminUserMutationResponseDtoOutput
+  status: 200
+}
+
+export type deleteUserResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type deleteUserResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type deleteUserResponseSuccess = (deleteUserResponse200) & {
+  headers: Headers;
+};
+export type deleteUserResponseError = (deleteUserResponse400 | deleteUserResponse404) & {
+  headers: Headers;
+};
+
+export type deleteUserResponse = (deleteUserResponseSuccess | deleteUserResponseError)
+
+export const getDeleteUserUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}`
+}
+
+/**
+ * @summary Delete a user
+ */
+export const deleteUser = async (userId: string, options?: RequestInit): Promise<deleteUserResponse> => {
+
+  return customFetcher<deleteUserResponse>(getDeleteUserUrl(userId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteUserQueryKey = (userId: string,) => {
+    return [
+    'DELETE', `/api/v1/users/${userId}`
+    ] as const;
+    }
+
+
+export const getDeleteUserQueryOptions = <TData = Awaited<ReturnType<typeof deleteUser>>, TError = UsersApiFailureDto>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDeleteUserQueryKey(userId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof deleteUser>>> = ({ signal }) => deleteUser(userId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: userId !== null && userId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof deleteUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DeleteUserQueryResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
+export type DeleteUserQueryError = UsersApiFailureDto
+
+
+export function useDeleteUser<TData = Awaited<ReturnType<typeof deleteUser>>, TError = UsersApiFailureDto>(
+ userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteUser>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof deleteUser>>,
+          TError,
+          Awaited<ReturnType<typeof deleteUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDeleteUser<TData = Awaited<ReturnType<typeof deleteUser>>, TError = UsersApiFailureDto>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteUser>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof deleteUser>>,
+          TError,
+          Awaited<ReturnType<typeof deleteUser>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDeleteUser<TData = Awaited<ReturnType<typeof deleteUser>>, TError = UsersApiFailureDto>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Delete a user
+ */
+
+export function useDeleteUser<TData = Awaited<ReturnType<typeof deleteUser>>, TError = UsersApiFailureDto>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteUser>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDeleteUserQueryOptions(userId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type resetUserPasswordResponse200 = {
+  data: AdminUserMutationResponseDtoOutput
+  status: 200
+}
+
+export type resetUserPasswordResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type resetUserPasswordResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type resetUserPasswordResponseSuccess = (resetUserPasswordResponse200) & {
+  headers: Headers;
+};
+export type resetUserPasswordResponseError = (resetUserPasswordResponse400 | resetUserPasswordResponse404) & {
+  headers: Headers;
+};
+
+export type resetUserPasswordResponse = (resetUserPasswordResponseSuccess | resetUserPasswordResponseError)
+
+export const getResetUserPasswordUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}/password`
+}
+
+/**
+ * @summary Reset a user's password
+ */
+export const resetUserPassword = async (userId: string,
+    resetAdminUserPasswordDto: ResetAdminUserPasswordDto, options?: RequestInit): Promise<resetUserPasswordResponse> => {
+
+  return customFetcher<resetUserPasswordResponse>(getResetUserPasswordUrl(userId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(resetAdminUserPasswordDto)
+  }
+);}
+
+
+
+
+
+export const getResetUserPasswordQueryKey = (userId: string,
+    resetAdminUserPasswordDto?: ResetAdminUserPasswordDto,) => {
+    return [
+    'POST', `/api/v1/users/${userId}/password`, resetAdminUserPasswordDto
+    ] as const;
+    }
+
+
+export const getResetUserPasswordQueryOptions = <TData = Awaited<ReturnType<typeof resetUserPassword>>, TError = UsersApiFailureDto>(userId: string,
+    resetAdminUserPasswordDto: ResetAdminUserPasswordDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resetUserPassword>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getResetUserPasswordQueryKey(userId,resetAdminUserPasswordDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof resetUserPassword>>> = ({ signal }) => resetUserPassword(userId,resetAdminUserPasswordDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: userId !== null && userId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof resetUserPassword>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ResetUserPasswordQueryResult = NonNullable<Awaited<ReturnType<typeof resetUserPassword>>>
+export type ResetUserPasswordQueryError = UsersApiFailureDto
+
+
+export function useResetUserPassword<TData = Awaited<ReturnType<typeof resetUserPassword>>, TError = UsersApiFailureDto>(
+ userId: string,
+    resetAdminUserPasswordDto: ResetAdminUserPasswordDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof resetUserPassword>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof resetUserPassword>>,
+          TError,
+          Awaited<ReturnType<typeof resetUserPassword>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useResetUserPassword<TData = Awaited<ReturnType<typeof resetUserPassword>>, TError = UsersApiFailureDto>(
+ userId: string,
+    resetAdminUserPasswordDto: ResetAdminUserPasswordDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resetUserPassword>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof resetUserPassword>>,
+          TError,
+          Awaited<ReturnType<typeof resetUserPassword>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useResetUserPassword<TData = Awaited<ReturnType<typeof resetUserPassword>>, TError = UsersApiFailureDto>(
+ userId: string,
+    resetAdminUserPasswordDto: ResetAdminUserPasswordDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resetUserPassword>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Reset a user's password
+ */
+
+export function useResetUserPassword<TData = Awaited<ReturnType<typeof resetUserPassword>>, TError = UsersApiFailureDto>(
+ userId: string,
+    resetAdminUserPasswordDto: ResetAdminUserPasswordDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resetUserPassword>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getResetUserPasswordQueryOptions(userId,resetAdminUserPasswordDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type getSystemSettingsResponse200 = {
+  data: SystemSettingsResponseDtoOutput
+  status: 200
+}
+
+export type getSystemSettingsResponse401 = {
+  data: SettingsApiFailureDto
+  status: 401
+}
+
+export type getSystemSettingsResponseSuccess = (getSystemSettingsResponse200) & {
+  headers: Headers;
+};
+export type getSystemSettingsResponseError = (getSystemSettingsResponse401) & {
+  headers: Headers;
+};
+
+export type getSystemSettingsResponse = (getSystemSettingsResponseSuccess | getSystemSettingsResponseError)
+
+export const getGetSystemSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/settings/system`
+}
+
+/**
+ * @summary Get the current system settings
+ */
+export const getSystemSettings = async ( options?: RequestInit): Promise<getSystemSettingsResponse> => {
+
+  return customFetcher<getSystemSettingsResponse>(getGetSystemSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSystemSettingsQueryKey = () => {
+    return [
+    `/api/v1/settings/system`
+    ] as const;
+    }
+
+
+export const getGetSystemSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getSystemSettings>>, TError = SettingsApiFailureDto>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSystemSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemSettings>>> = ({ signal }) => getSystemSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSystemSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSystemSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getSystemSettings>>>
+export type GetSystemSettingsQueryError = SettingsApiFailureDto
+
+
+export function useGetSystemSettings<TData = Awaited<ReturnType<typeof getSystemSettings>>, TError = SettingsApiFailureDto>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemSettings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSystemSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getSystemSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSystemSettings<TData = Awaited<ReturnType<typeof getSystemSettings>>, TError = SettingsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemSettings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSystemSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getSystemSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSystemSettings<TData = Awaited<ReturnType<typeof getSystemSettings>>, TError = SettingsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get the current system settings
+ */
+
+export function useGetSystemSettings<TData = Awaited<ReturnType<typeof getSystemSettings>>, TError = SettingsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSystemSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetSystemSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type updateSystemSettingsResponse200 = {
+  data: SystemSettingsResponseDtoOutput
+  status: 200
+}
+
+export type updateSystemSettingsResponse400 = {
+  data: SettingsApiFailureDto
+  status: 400
+}
+
+export type updateSystemSettingsResponse401 = {
+  data: SettingsApiFailureDto
+  status: 401
+}
+
+export type updateSystemSettingsResponseSuccess = (updateSystemSettingsResponse200) & {
+  headers: Headers;
+};
+export type updateSystemSettingsResponseError = (updateSystemSettingsResponse400 | updateSystemSettingsResponse401) & {
+  headers: Headers;
+};
+
+export type updateSystemSettingsResponse = (updateSystemSettingsResponseSuccess | updateSystemSettingsResponseError)
+
+export const getUpdateSystemSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/settings/system`
+}
+
+/**
+ * @summary Update the system settings
+ */
+export const updateSystemSettings = async (updateSystemSettingsDto: UpdateSystemSettingsDto, options?: RequestInit): Promise<updateSystemSettingsResponse> => {
+
+  return customFetcher<updateSystemSettingsResponse>(getUpdateSystemSettingsUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateSystemSettingsDto)
+  }
+);}
+
+
+
+
+
+export const getUpdateSystemSettingsQueryKey = (updateSystemSettingsDto?: UpdateSystemSettingsDto,) => {
+    return [
+    'PATCH', `/api/v1/settings/system`, updateSystemSettingsDto
+    ] as const;
+    }
+
+
+export const getUpdateSystemSettingsQueryOptions = <TData = Awaited<ReturnType<typeof updateSystemSettings>>, TError = SettingsApiFailureDto>(updateSystemSettingsDto: UpdateSystemSettingsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateSystemSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getUpdateSystemSettingsQueryKey(updateSystemSettingsDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof updateSystemSettings>>> = ({ signal }) => updateSystemSettings(updateSystemSettingsDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof updateSystemSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type UpdateSystemSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof updateSystemSettings>>>
+export type UpdateSystemSettingsQueryError = SettingsApiFailureDto
+
+
+export function useUpdateSystemSettings<TData = Awaited<ReturnType<typeof updateSystemSettings>>, TError = SettingsApiFailureDto>(
+ updateSystemSettingsDto: UpdateSystemSettingsDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateSystemSettings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateSystemSettings>>,
+          TError,
+          Awaited<ReturnType<typeof updateSystemSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateSystemSettings<TData = Awaited<ReturnType<typeof updateSystemSettings>>, TError = SettingsApiFailureDto>(
+ updateSystemSettingsDto: UpdateSystemSettingsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateSystemSettings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateSystemSettings>>,
+          TError,
+          Awaited<ReturnType<typeof updateSystemSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateSystemSettings<TData = Awaited<ReturnType<typeof updateSystemSettings>>, TError = SettingsApiFailureDto>(
+ updateSystemSettingsDto: UpdateSystemSettingsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateSystemSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Update the system settings
+ */
+
+export function useUpdateSystemSettings<TData = Awaited<ReturnType<typeof updateSystemSettings>>, TError = SettingsApiFailureDto>(
+ updateSystemSettingsDto: UpdateSystemSettingsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateSystemSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getUpdateSystemSettingsQueryOptions(updateSystemSettingsDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type listModelsResponse200 = {
+  data: ModelListResponseDtoOutput
+  status: 200
+}
+
+export type listModelsResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type listModelsResponseSuccess = (listModelsResponse200) & {
+  headers: Headers;
+};
+export type listModelsResponseError = (listModelsResponse401) & {
+  headers: Headers;
+};
+
+export type listModelsResponse = (listModelsResponseSuccess | listModelsResponseError)
+
+export const getListModelsUrl = (params?: ListModelsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/models?${stringifiedParams}` : `/api/v1/models`
+}
+
+/**
+ * @summary List models
+ */
+export const listModels = async (params?: ListModelsParams, options?: RequestInit): Promise<listModelsResponse> => {
+
+  return customFetcher<listModelsResponse>(getListModelsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListModelsQueryKey = (params?: ListModelsParams,) => {
+    return [
+    `/api/v1/models`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListModelsQueryOptions = <TData = Awaited<ReturnType<typeof listModels>>, TError = ModelsApiFailureDto>(params?: ListModelsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listModels>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListModelsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listModels>>> = ({ signal }) => listModels(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listModels>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListModelsQueryResult = NonNullable<Awaited<ReturnType<typeof listModels>>>
+export type ListModelsQueryError = ModelsApiFailureDto
+
+
+export function useListModels<TData = Awaited<ReturnType<typeof listModels>>, TError = ModelsApiFailureDto>(
+ params: undefined |  ListModelsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listModels>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listModels>>,
+          TError,
+          Awaited<ReturnType<typeof listModels>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListModels<TData = Awaited<ReturnType<typeof listModels>>, TError = ModelsApiFailureDto>(
+ params?: ListModelsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listModels>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listModels>>,
+          TError,
+          Awaited<ReturnType<typeof listModels>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListModels<TData = Awaited<ReturnType<typeof listModels>>, TError = ModelsApiFailureDto>(
+ params?: ListModelsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listModels>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List models
+ */
+
+export function useListModels<TData = Awaited<ReturnType<typeof listModels>>, TError = ModelsApiFailureDto>(
+ params?: ListModelsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listModels>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListModelsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type createModelResponse201 = {
+  data: ModelResponseDtoOutput
+  status: 201
+}
+
+export type createModelResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type createModelResponseSuccess = (createModelResponse201) & {
+  headers: Headers;
+};
+export type createModelResponseError = (createModelResponse400) & {
+  headers: Headers;
+};
+
+export type createModelResponse = (createModelResponseSuccess | createModelResponseError)
+
+export const getCreateModelUrl = () => {
+
+
+
+
+  return `/api/v1/models`
+}
+
+/**
+ * @summary Create a model
+ */
+export const createModel = async (createModelDto: CreateModelDto, options?: RequestInit): Promise<createModelResponse> => {
+
+  return customFetcher<createModelResponse>(getCreateModelUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createModelDto)
+  }
+);}
+
+
+
+
+
+export const getCreateModelQueryKey = (createModelDto?: CreateModelDto,) => {
+    return [
+    'POST', `/api/v1/models`, createModelDto
+    ] as const;
+    }
+
+
+export const getCreateModelQueryOptions = <TData = Awaited<ReturnType<typeof createModel>>, TError = ModelsApiFailureDto>(createModelDto: CreateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCreateModelQueryKey(createModelDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof createModel>>> = ({ signal }) => createModel(createModelDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof createModel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CreateModelQueryResult = NonNullable<Awaited<ReturnType<typeof createModel>>>
+export type CreateModelQueryError = ModelsApiFailureDto
+
+
+export function useCreateModel<TData = Awaited<ReturnType<typeof createModel>>, TError = ModelsApiFailureDto>(
+ createModelDto: CreateModelDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof createModel>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof createModel>>,
+          TError,
+          Awaited<ReturnType<typeof createModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCreateModel<TData = Awaited<ReturnType<typeof createModel>>, TError = ModelsApiFailureDto>(
+ createModelDto: CreateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createModel>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof createModel>>,
+          TError,
+          Awaited<ReturnType<typeof createModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCreateModel<TData = Awaited<ReturnType<typeof createModel>>, TError = ModelsApiFailureDto>(
+ createModelDto: CreateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Create a model
+ */
+
+export function useCreateModel<TData = Awaited<ReturnType<typeof createModel>>, TError = ModelsApiFailureDto>(
+ createModelDto: CreateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCreateModelQueryOptions(createModelDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type getModelResponse200 = {
+  data: ModelResponseDtoOutput
+  status: 200
+}
+
+export type getModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type getModelResponseSuccess = (getModelResponse200) & {
+  headers: Headers;
+};
+export type getModelResponseError = (getModelResponse404) & {
+  headers: Headers;
+};
+
+export type getModelResponse = (getModelResponseSuccess | getModelResponseError)
+
+export const getGetModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}`
+}
+
+/**
+ * @summary Get a model
+ */
+export const getModel = async (modelId: string, options?: RequestInit): Promise<getModelResponse> => {
+
+  return customFetcher<getModelResponse>(getGetModelUrl(modelId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetModelQueryKey = (modelId: string,) => {
+    return [
+    `/api/v1/models/${modelId}`
+    ] as const;
+    }
+
+
+export const getGetModelQueryOptions = <TData = Awaited<ReturnType<typeof getModel>>, TError = ModelsApiFailureDto>(modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetModelQueryKey(modelId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getModel>>> = ({ signal }) => getModel(modelId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: modelId !== null && modelId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getModel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetModelQueryResult = NonNullable<Awaited<ReturnType<typeof getModel>>>
+export type GetModelQueryError = ModelsApiFailureDto
+
+
+export function useGetModel<TData = Awaited<ReturnType<typeof getModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getModel>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getModel>>,
+          TError,
+          Awaited<ReturnType<typeof getModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetModel<TData = Awaited<ReturnType<typeof getModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getModel>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getModel>>,
+          TError,
+          Awaited<ReturnType<typeof getModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetModel<TData = Awaited<ReturnType<typeof getModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a model
+ */
+
+export function useGetModel<TData = Awaited<ReturnType<typeof getModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetModelQueryOptions(modelId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type updateModelResponse200 = {
+  data: ModelResponseDtoOutput
+  status: 200
+}
+
+export type updateModelResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type updateModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type updateModelResponseSuccess = (updateModelResponse200) & {
+  headers: Headers;
+};
+export type updateModelResponseError = (updateModelResponse400 | updateModelResponse404) & {
+  headers: Headers;
+};
+
+export type updateModelResponse = (updateModelResponseSuccess | updateModelResponseError)
+
+export const getUpdateModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}`
+}
+
+/**
+ * @summary Update a model
+ */
+export const updateModel = async (modelId: string,
+    updateModelDto: UpdateModelDto, options?: RequestInit): Promise<updateModelResponse> => {
+
+  return customFetcher<updateModelResponse>(getUpdateModelUrl(modelId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateModelDto)
+  }
+);}
+
+
+
+
+
+export const getUpdateModelQueryKey = (modelId: string,
+    updateModelDto?: UpdateModelDto,) => {
+    return [
+    'PATCH', `/api/v1/models/${modelId}`, updateModelDto
+    ] as const;
+    }
+
+
+export const getUpdateModelQueryOptions = <TData = Awaited<ReturnType<typeof updateModel>>, TError = ModelsApiFailureDto>(modelId: string,
+    updateModelDto: UpdateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getUpdateModelQueryKey(modelId,updateModelDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof updateModel>>> = ({ signal }) => updateModel(modelId,updateModelDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: modelId !== null && modelId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof updateModel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type UpdateModelQueryResult = NonNullable<Awaited<ReturnType<typeof updateModel>>>
+export type UpdateModelQueryError = ModelsApiFailureDto
+
+
+export function useUpdateModel<TData = Awaited<ReturnType<typeof updateModel>>, TError = ModelsApiFailureDto>(
+ modelId: string,
+    updateModelDto: UpdateModelDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateModel>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateModel>>,
+          TError,
+          Awaited<ReturnType<typeof updateModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateModel<TData = Awaited<ReturnType<typeof updateModel>>, TError = ModelsApiFailureDto>(
+ modelId: string,
+    updateModelDto: UpdateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateModel>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateModel>>,
+          TError,
+          Awaited<ReturnType<typeof updateModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateModel<TData = Awaited<ReturnType<typeof updateModel>>, TError = ModelsApiFailureDto>(
+ modelId: string,
+    updateModelDto: UpdateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Update a model
+ */
+
+export function useUpdateModel<TData = Awaited<ReturnType<typeof updateModel>>, TError = ModelsApiFailureDto>(
+ modelId: string,
+    updateModelDto: UpdateModelDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getUpdateModelQueryOptions(modelId,updateModelDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type deleteModelResponse200 = {
+  data: MutationResponseDtoOutput
+  status: 200
+}
+
+export type deleteModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type deleteModelResponseSuccess = (deleteModelResponse200) & {
+  headers: Headers;
+};
+export type deleteModelResponseError = (deleteModelResponse404) & {
+  headers: Headers;
+};
+
+export type deleteModelResponse = (deleteModelResponseSuccess | deleteModelResponseError)
+
+export const getDeleteModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}`
+}
+
+/**
+ * @summary Delete a model
+ */
+export const deleteModel = async (modelId: string, options?: RequestInit): Promise<deleteModelResponse> => {
+
+  return customFetcher<deleteModelResponse>(getDeleteModelUrl(modelId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteModelQueryKey = (modelId: string,) => {
+    return [
+    'DELETE', `/api/v1/models/${modelId}`
+    ] as const;
+    }
+
+
+export const getDeleteModelQueryOptions = <TData = Awaited<ReturnType<typeof deleteModel>>, TError = ModelsApiFailureDto>(modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDeleteModelQueryKey(modelId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof deleteModel>>> = ({ signal }) => deleteModel(modelId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: modelId !== null && modelId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof deleteModel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DeleteModelQueryResult = NonNullable<Awaited<ReturnType<typeof deleteModel>>>
+export type DeleteModelQueryError = ModelsApiFailureDto
+
+
+export function useDeleteModel<TData = Awaited<ReturnType<typeof deleteModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteModel>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof deleteModel>>,
+          TError,
+          Awaited<ReturnType<typeof deleteModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDeleteModel<TData = Awaited<ReturnType<typeof deleteModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteModel>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof deleteModel>>,
+          TError,
+          Awaited<ReturnType<typeof deleteModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDeleteModel<TData = Awaited<ReturnType<typeof deleteModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Delete a model
+ */
+
+export function useDeleteModel<TData = Awaited<ReturnType<typeof deleteModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDeleteModelQueryOptions(modelId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type verifyModelResponse200 = {
+  data: VerifyModelResponseDtoOutput
+  status: 200
+}
+
+export type verifyModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type verifyModelResponseSuccess = (verifyModelResponse200) & {
+  headers: Headers;
+};
+export type verifyModelResponseError = (verifyModelResponse404) & {
+  headers: Headers;
+};
+
+export type verifyModelResponse = (verifyModelResponseSuccess | verifyModelResponseError)
+
+export const getVerifyModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}/verify`
+}
+
+/**
+ * @summary Test connectivity to a model with a lightweight upstream call
+ */
+export const verifyModel = async (modelId: string, options?: RequestInit): Promise<verifyModelResponse> => {
+
+  return customFetcher<verifyModelResponse>(getVerifyModelUrl(modelId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getVerifyModelQueryKey = (modelId: string,) => {
+    return [
+    'POST', `/api/v1/models/${modelId}/verify`
+    ] as const;
+    }
+
+
+export const getVerifyModelQueryOptions = <TData = Awaited<ReturnType<typeof verifyModel>>, TError = ModelsApiFailureDto>(modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getVerifyModelQueryKey(modelId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof verifyModel>>> = ({ signal }) => verifyModel(modelId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: modelId !== null && modelId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof verifyModel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type VerifyModelQueryResult = NonNullable<Awaited<ReturnType<typeof verifyModel>>>
+export type VerifyModelQueryError = ModelsApiFailureDto
+
+
+export function useVerifyModel<TData = Awaited<ReturnType<typeof verifyModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyModel>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof verifyModel>>,
+          TError,
+          Awaited<ReturnType<typeof verifyModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useVerifyModel<TData = Awaited<ReturnType<typeof verifyModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyModel>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof verifyModel>>,
+          TError,
+          Awaited<ReturnType<typeof verifyModel>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useVerifyModel<TData = Awaited<ReturnType<typeof verifyModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Test connectivity to a model with a lightweight upstream call
+ */
+
+export function useVerifyModel<TData = Awaited<ReturnType<typeof verifyModel>>, TError = ModelsApiFailureDto>(
+ modelId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof verifyModel>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getVerifyModelQueryOptions(modelId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type listProvidersResponse200 = {
+  data: ProviderListResponseDtoOutput
+  status: 200
+}
+
+export type listProvidersResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type listProvidersResponseSuccess = (listProvidersResponse200) & {
+  headers: Headers;
+};
+export type listProvidersResponseError = (listProvidersResponse401) & {
+  headers: Headers;
+};
+
+export type listProvidersResponse = (listProvidersResponseSuccess | listProvidersResponseError)
+
+export const getListProvidersUrl = () => {
+
+
+
+
+  return `/api/v1/providers`
+}
+
+/**
+ * @summary List providers
+ */
+export const listProviders = async ( options?: RequestInit): Promise<listProvidersResponse> => {
+
+  return customFetcher<listProvidersResponse>(getListProvidersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListProvidersQueryKey = () => {
+    return [
+    `/api/v1/providers`
+    ] as const;
+    }
+
+
+export const getListProvidersQueryOptions = <TData = Awaited<ReturnType<typeof listProviders>>, TError = ModelsApiFailureDto>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviders>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProvidersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProviders>>> = ({ signal }) => listProviders({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProviders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListProvidersQueryResult = NonNullable<Awaited<ReturnType<typeof listProviders>>>
+export type ListProvidersQueryError = ModelsApiFailureDto
+
+
+export function useListProviders<TData = Awaited<ReturnType<typeof listProviders>>, TError = ModelsApiFailureDto>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviders>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviders>>,
+          TError,
+          Awaited<ReturnType<typeof listProviders>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviders<TData = Awaited<ReturnType<typeof listProviders>>, TError = ModelsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviders>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProviders>>,
+          TError,
+          Awaited<ReturnType<typeof listProviders>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListProviders<TData = Awaited<ReturnType<typeof listProviders>>, TError = ModelsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviders>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List providers
+ */
+
+export function useListProviders<TData = Awaited<ReturnType<typeof listProviders>>, TError = ModelsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listProviders>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListProvidersQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type createProviderResponse201 = {
+  data: ProviderResponseDtoOutput
+  status: 201
+}
+
+export type createProviderResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type createProviderResponseSuccess = (createProviderResponse201) & {
+  headers: Headers;
+};
+export type createProviderResponseError = (createProviderResponse400) & {
+  headers: Headers;
+};
+
+export type createProviderResponse = (createProviderResponseSuccess | createProviderResponseError)
+
+export const getCreateProviderUrl = () => {
+
+
+
+
+  return `/api/v1/providers`
+}
+
+/**
+ * @summary Create a provider
+ */
+export const createProvider = async (createProviderDto: CreateProviderDto, options?: RequestInit): Promise<createProviderResponse> => {
+
+  return customFetcher<createProviderResponse>(getCreateProviderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createProviderDto)
+  }
+);}
+
+
+
+
+
+export const getCreateProviderQueryKey = (createProviderDto?: CreateProviderDto,) => {
+    return [
+    'POST', `/api/v1/providers`, createProviderDto
+    ] as const;
+    }
+
+
+export const getCreateProviderQueryOptions = <TData = Awaited<ReturnType<typeof createProvider>>, TError = ModelsApiFailureDto>(createProviderDto: CreateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCreateProviderQueryKey(createProviderDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof createProvider>>> = ({ signal }) => createProvider(createProviderDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof createProvider>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CreateProviderQueryResult = NonNullable<Awaited<ReturnType<typeof createProvider>>>
+export type CreateProviderQueryError = ModelsApiFailureDto
+
+
+export function useCreateProvider<TData = Awaited<ReturnType<typeof createProvider>>, TError = ModelsApiFailureDto>(
+ createProviderDto: CreateProviderDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof createProvider>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof createProvider>>,
+          TError,
+          Awaited<ReturnType<typeof createProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCreateProvider<TData = Awaited<ReturnType<typeof createProvider>>, TError = ModelsApiFailureDto>(
+ createProviderDto: CreateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createProvider>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof createProvider>>,
+          TError,
+          Awaited<ReturnType<typeof createProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCreateProvider<TData = Awaited<ReturnType<typeof createProvider>>, TError = ModelsApiFailureDto>(
+ createProviderDto: CreateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Create a provider
+ */
+
+export function useCreateProvider<TData = Awaited<ReturnType<typeof createProvider>>, TError = ModelsApiFailureDto>(
+ createProviderDto: CreateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof createProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCreateProviderQueryOptions(createProviderDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type getProviderResponse200 = {
+  data: ProviderResponseDtoOutput
+  status: 200
+}
+
+export type getProviderResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type getProviderResponseSuccess = (getProviderResponse200) & {
+  headers: Headers;
+};
+export type getProviderResponseError = (getProviderResponse404) & {
+  headers: Headers;
+};
+
+export type getProviderResponse = (getProviderResponseSuccess | getProviderResponseError)
+
+export const getGetProviderUrl = (providerId: string,) => {
+
+
+
+
+  return `/api/v1/providers/${providerId}`
+}
+
+/**
+ * @summary Get a provider
+ */
+export const getProvider = async (providerId: string, options?: RequestInit): Promise<getProviderResponse> => {
+
+  return customFetcher<getProviderResponse>(getGetProviderUrl(providerId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProviderQueryKey = (providerId: string,) => {
+    return [
+    `/api/v1/providers/${providerId}`
+    ] as const;
+    }
+
+
+export const getGetProviderQueryOptions = <TData = Awaited<ReturnType<typeof getProvider>>, TError = ModelsApiFailureDto>(providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProviderQueryKey(providerId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProvider>>> = ({ signal }) => getProvider(providerId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: providerId !== null && providerId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProvider>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProviderQueryResult = NonNullable<Awaited<ReturnType<typeof getProvider>>>
+export type GetProviderQueryError = ModelsApiFailureDto
+
+
+export function useGetProvider<TData = Awaited<ReturnType<typeof getProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProvider>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProvider>>,
+          TError,
+          Awaited<ReturnType<typeof getProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProvider<TData = Awaited<ReturnType<typeof getProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProvider>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProvider>>,
+          TError,
+          Awaited<ReturnType<typeof getProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProvider<TData = Awaited<ReturnType<typeof getProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a provider
+ */
+
+export function useGetProvider<TData = Awaited<ReturnType<typeof getProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProviderQueryOptions(providerId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type updateProviderResponse200 = {
+  data: ProviderResponseDtoOutput
+  status: 200
+}
+
+export type updateProviderResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type updateProviderResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type updateProviderResponseSuccess = (updateProviderResponse200) & {
+  headers: Headers;
+};
+export type updateProviderResponseError = (updateProviderResponse400 | updateProviderResponse404) & {
+  headers: Headers;
+};
+
+export type updateProviderResponse = (updateProviderResponseSuccess | updateProviderResponseError)
+
+export const getUpdateProviderUrl = (providerId: string,) => {
+
+
+
+
+  return `/api/v1/providers/${providerId}`
+}
+
+/**
+ * @summary Update a provider
+ */
+export const updateProvider = async (providerId: string,
+    updateProviderDto: UpdateProviderDto, options?: RequestInit): Promise<updateProviderResponse> => {
+
+  return customFetcher<updateProviderResponse>(getUpdateProviderUrl(providerId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateProviderDto)
+  }
+);}
+
+
+
+
+
+export const getUpdateProviderQueryKey = (providerId: string,
+    updateProviderDto?: UpdateProviderDto,) => {
+    return [
+    'PATCH', `/api/v1/providers/${providerId}`, updateProviderDto
+    ] as const;
+    }
+
+
+export const getUpdateProviderQueryOptions = <TData = Awaited<ReturnType<typeof updateProvider>>, TError = ModelsApiFailureDto>(providerId: string,
+    updateProviderDto: UpdateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getUpdateProviderQueryKey(providerId,updateProviderDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof updateProvider>>> = ({ signal }) => updateProvider(providerId,updateProviderDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: providerId !== null && providerId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof updateProvider>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type UpdateProviderQueryResult = NonNullable<Awaited<ReturnType<typeof updateProvider>>>
+export type UpdateProviderQueryError = ModelsApiFailureDto
+
+
+export function useUpdateProvider<TData = Awaited<ReturnType<typeof updateProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string,
+    updateProviderDto: UpdateProviderDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateProvider>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateProvider>>,
+          TError,
+          Awaited<ReturnType<typeof updateProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateProvider<TData = Awaited<ReturnType<typeof updateProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string,
+    updateProviderDto: UpdateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateProvider>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof updateProvider>>,
+          TError,
+          Awaited<ReturnType<typeof updateProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUpdateProvider<TData = Awaited<ReturnType<typeof updateProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string,
+    updateProviderDto: UpdateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Update a provider
+ */
+
+export function useUpdateProvider<TData = Awaited<ReturnType<typeof updateProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string,
+    updateProviderDto: UpdateProviderDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof updateProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getUpdateProviderQueryOptions(providerId,updateProviderDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type deleteProviderResponse200 = {
+  data: MutationResponseDtoOutput
+  status: 200
+}
+
+export type deleteProviderResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type deleteProviderResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type deleteProviderResponseSuccess = (deleteProviderResponse200) & {
+  headers: Headers;
+};
+export type deleteProviderResponseError = (deleteProviderResponse400 | deleteProviderResponse404) & {
+  headers: Headers;
+};
+
+export type deleteProviderResponse = (deleteProviderResponseSuccess | deleteProviderResponseError)
+
+export const getDeleteProviderUrl = (providerId: string,) => {
+
+
+
+
+  return `/api/v1/providers/${providerId}`
+}
+
+/**
+ * @summary Delete a provider
+ */
+export const deleteProvider = async (providerId: string, options?: RequestInit): Promise<deleteProviderResponse> => {
+
+  return customFetcher<deleteProviderResponse>(getDeleteProviderUrl(providerId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteProviderQueryKey = (providerId: string,) => {
+    return [
+    'DELETE', `/api/v1/providers/${providerId}`
+    ] as const;
+    }
+
+
+export const getDeleteProviderQueryOptions = <TData = Awaited<ReturnType<typeof deleteProvider>>, TError = ModelsApiFailureDto>(providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDeleteProviderQueryKey(providerId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof deleteProvider>>> = ({ signal }) => deleteProvider(providerId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: providerId !== null && providerId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof deleteProvider>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DeleteProviderQueryResult = NonNullable<Awaited<ReturnType<typeof deleteProvider>>>
+export type DeleteProviderQueryError = ModelsApiFailureDto
+
+
+export function useDeleteProvider<TData = Awaited<ReturnType<typeof deleteProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteProvider>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof deleteProvider>>,
+          TError,
+          Awaited<ReturnType<typeof deleteProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDeleteProvider<TData = Awaited<ReturnType<typeof deleteProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteProvider>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof deleteProvider>>,
+          TError,
+          Awaited<ReturnType<typeof deleteProvider>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDeleteProvider<TData = Awaited<ReturnType<typeof deleteProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Delete a provider
+ */
+
+export function useDeleteProvider<TData = Awaited<ReturnType<typeof deleteProvider>>, TError = ModelsApiFailureDto>(
+ providerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof deleteProvider>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDeleteProviderQueryOptions(providerId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type discoverProviderModelsResponse200 = {
+  data: DiscoverModelsResponseDtoOutput
+  status: 200
+}
+
+export type discoverProviderModelsResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type discoverProviderModelsResponseSuccess = (discoverProviderModelsResponse200) & {
+  headers: Headers;
+};
+export type discoverProviderModelsResponseError = (discoverProviderModelsResponse400) & {
+  headers: Headers;
+};
+
+export type discoverProviderModelsResponse = (discoverProviderModelsResponseSuccess | discoverProviderModelsResponseError)
+
+export const getDiscoverProviderModelsUrl = () => {
+
+
+
+
+  return `/api/v1/providers/discover`
+}
+
+/**
+ * @summary List models exposed by a provider, using stored creds or an ad-hoc credential triple
+ */
+export const discoverProviderModels = async (discoverModelsDto: DiscoverModelsDto, options?: RequestInit): Promise<discoverProviderModelsResponse> => {
+
+  return customFetcher<discoverProviderModelsResponse>(getDiscoverProviderModelsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(discoverModelsDto)
+  }
+);}
+
+
+
+
+
+export const getDiscoverProviderModelsQueryKey = (discoverModelsDto?: DiscoverModelsDto,) => {
+    return [
+    'POST', `/api/v1/providers/discover`, discoverModelsDto
+    ] as const;
+    }
+
+
+export const getDiscoverProviderModelsQueryOptions = <TData = Awaited<ReturnType<typeof discoverProviderModels>>, TError = ModelsApiFailureDto>(discoverModelsDto: DiscoverModelsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverProviderModels>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDiscoverProviderModelsQueryKey(discoverModelsDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof discoverProviderModels>>> = ({ signal }) => discoverProviderModels(discoverModelsDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof discoverProviderModels>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DiscoverProviderModelsQueryResult = NonNullable<Awaited<ReturnType<typeof discoverProviderModels>>>
+export type DiscoverProviderModelsQueryError = ModelsApiFailureDto
+
+
+export function useDiscoverProviderModels<TData = Awaited<ReturnType<typeof discoverProviderModels>>, TError = ModelsApiFailureDto>(
+ discoverModelsDto: DiscoverModelsDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverProviderModels>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof discoverProviderModels>>,
+          TError,
+          Awaited<ReturnType<typeof discoverProviderModels>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDiscoverProviderModels<TData = Awaited<ReturnType<typeof discoverProviderModels>>, TError = ModelsApiFailureDto>(
+ discoverModelsDto: DiscoverModelsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverProviderModels>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof discoverProviderModels>>,
+          TError,
+          Awaited<ReturnType<typeof discoverProviderModels>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDiscoverProviderModels<TData = Awaited<ReturnType<typeof discoverProviderModels>>, TError = ModelsApiFailureDto>(
+ discoverModelsDto: DiscoverModelsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverProviderModels>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List models exposed by a provider, using stored creds or an ad-hoc credential triple
+ */
+
+export function useDiscoverProviderModels<TData = Awaited<ReturnType<typeof discoverProviderModels>>, TError = ModelsApiFailureDto>(
+ discoverModelsDto: DiscoverModelsDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof discoverProviderModels>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDiscoverProviderModelsQueryOptions(discoverModelsDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type runPlaygroundResponse200 = {
+  data: PlaygroundRunResponseDtoOutput
+  status: 200
+}
+
+export type runPlaygroundResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type runPlaygroundResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type runPlaygroundResponseSuccess = (runPlaygroundResponse200) & {
+  headers: Headers;
+};
+export type runPlaygroundResponseError = (runPlaygroundResponse400 | runPlaygroundResponse401) & {
+  headers: Headers;
+};
+
+export type runPlaygroundResponse = (runPlaygroundResponseSuccess | runPlaygroundResponseError)
+
+export const getRunPlaygroundUrl = () => {
+
+
+
+
+  return `/api/v1/playground`
+}
+
+/**
+ * @summary Run a non-streaming inference call
+ */
+export const runPlayground = async (playgroundRunDto: PlaygroundRunDto, options?: RequestInit): Promise<runPlaygroundResponse> => {
+
+  return customFetcher<runPlaygroundResponse>(getRunPlaygroundUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(playgroundRunDto)
+  }
+);}
+
+
+
+
+
+export const getRunPlaygroundQueryKey = (playgroundRunDto?: PlaygroundRunDto,) => {
+    return [
+    'POST', `/api/v1/playground`, playgroundRunDto
+    ] as const;
+    }
+
+
+export const getRunPlaygroundQueryOptions = <TData = Awaited<ReturnType<typeof runPlayground>>, TError = ModelsApiFailureDto>(playgroundRunDto: PlaygroundRunDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof runPlayground>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getRunPlaygroundQueryKey(playgroundRunDto);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof runPlayground>>> = ({ signal }) => runPlayground(playgroundRunDto, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof runPlayground>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type RunPlaygroundQueryResult = NonNullable<Awaited<ReturnType<typeof runPlayground>>>
+export type RunPlaygroundQueryError = ModelsApiFailureDto
+
+
+export function useRunPlayground<TData = Awaited<ReturnType<typeof runPlayground>>, TError = ModelsApiFailureDto>(
+ playgroundRunDto: PlaygroundRunDto, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof runPlayground>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof runPlayground>>,
+          TError,
+          Awaited<ReturnType<typeof runPlayground>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRunPlayground<TData = Awaited<ReturnType<typeof runPlayground>>, TError = ModelsApiFailureDto>(
+ playgroundRunDto: PlaygroundRunDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof runPlayground>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof runPlayground>>,
+          TError,
+          Awaited<ReturnType<typeof runPlayground>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRunPlayground<TData = Awaited<ReturnType<typeof runPlayground>>, TError = ModelsApiFailureDto>(
+ playgroundRunDto: PlaygroundRunDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof runPlayground>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Run a non-streaming inference call
+ */
+
+export function useRunPlayground<TData = Awaited<ReturnType<typeof runPlayground>>, TError = ModelsApiFailureDto>(
+ playgroundRunDto: PlaygroundRunDto, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof runPlayground>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getRunPlaygroundQueryOptions(playgroundRunDto,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type getConfigSnapshotResponse200 = {
+  data: ConfigSnapshotResponseDtoOutput
+  status: 200
+}
+
+export type getConfigSnapshotResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type getConfigSnapshotResponseSuccess = (getConfigSnapshotResponse200) & {
+  headers: Headers;
+};
+export type getConfigSnapshotResponseError = (getConfigSnapshotResponse401) & {
+  headers: Headers;
+};
+
+export type getConfigSnapshotResponse = (getConfigSnapshotResponseSuccess | getConfigSnapshotResponseError)
+
+export const getGetConfigSnapshotUrl = () => {
+
+
+
+
+  return `/api/v1/config/snapshot`
+}
+
+/**
+ * @summary Read providers / templates / models in one call. API keys are returned masked.
+ */
+export const getConfigSnapshot = async ( options?: RequestInit): Promise<getConfigSnapshotResponse> => {
+
+  return customFetcher<getConfigSnapshotResponse>(getGetConfigSnapshotUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetConfigSnapshotQueryKey = () => {
+    return [
+    `/api/v1/config/snapshot`
+    ] as const;
+    }
+
+
+export const getGetConfigSnapshotQueryOptions = <TData = Awaited<ReturnType<typeof getConfigSnapshot>>, TError = ModelsApiFailureDto>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfigSnapshot>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetConfigSnapshotQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getConfigSnapshot>>> = ({ signal }) => getConfigSnapshot({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getConfigSnapshot>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetConfigSnapshotQueryResult = NonNullable<Awaited<ReturnType<typeof getConfigSnapshot>>>
+export type GetConfigSnapshotQueryError = ModelsApiFailureDto
+
+
+export function useGetConfigSnapshot<TData = Awaited<ReturnType<typeof getConfigSnapshot>>, TError = ModelsApiFailureDto>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfigSnapshot>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConfigSnapshot>>,
+          TError,
+          Awaited<ReturnType<typeof getConfigSnapshot>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetConfigSnapshot<TData = Awaited<ReturnType<typeof getConfigSnapshot>>, TError = ModelsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfigSnapshot>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConfigSnapshot>>,
+          TError,
+          Awaited<ReturnType<typeof getConfigSnapshot>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetConfigSnapshot<TData = Awaited<ReturnType<typeof getConfigSnapshot>>, TError = ModelsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfigSnapshot>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Read providers / templates / models in one call. API keys are returned masked.
+ */
+
+export function useGetConfigSnapshot<TData = Awaited<ReturnType<typeof getConfigSnapshot>>, TError = ModelsApiFailureDto>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConfigSnapshot>>, TError, TData>>, request?: SecondParameter<typeof customFetcher>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetConfigSnapshotQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

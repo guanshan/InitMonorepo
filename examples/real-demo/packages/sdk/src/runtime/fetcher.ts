@@ -2,6 +2,20 @@ interface FetcherRequestInit extends RequestInit {
   baseUrl?: string;
 }
 
+const DEFAULT_HEADERS: Record<string, string> = {
+  Accept: "application/json",
+};
+
+let defaultBaseUrl = "";
+
+/**
+ * Set the default API base URL for generated SDK requests. Pass an empty
+ * string to keep requests same-origin.
+ */
+export const configureSdkBaseUrl = (baseUrl: string) => {
+  defaultBaseUrl = baseUrl;
+};
+
 interface ApiErrorPayload {
   error?: {
     code?: string;
@@ -129,8 +143,8 @@ export const customFetcher = async <TResponse>(
   url: string,
   init?: FetcherRequestInit,
 ): Promise<TResponse> => {
-  const resolvedUrl = resolveRequestUrl(url, init?.baseUrl);
-  const { signal, ...restInit } = init ?? {};
+  const resolvedUrl = resolveRequestUrl(url, init?.baseUrl ?? defaultBaseUrl);
+  const { signal, headers, ...restInit } = init ?? {};
   const fetchSignal = getFetchSignal(signal);
   delete (restInit as FetcherRequestInit).baseUrl;
 
@@ -139,7 +153,14 @@ export const customFetcher = async <TResponse>(
 
     try {
       response = await fetch(resolvedUrl, {
+        // Auth uses an httpOnly same-site cookie; the browser only forwards
+        // it when fetch is called with credentials: "include".
+        credentials: "include",
         ...restInit,
+        headers: {
+          ...DEFAULT_HEADERS,
+          ...(headers as Record<string, string> | undefined),
+        },
         ...(fetchSignal.signal ? { signal: fetchSignal.signal } : {}),
       });
     } catch (error) {

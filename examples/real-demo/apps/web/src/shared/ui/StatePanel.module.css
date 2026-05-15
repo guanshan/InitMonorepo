@@ -54,10 +54,14 @@
   opacity: 0.25;
 }
 
-.actionLink {
+.actionLink,
+.actionButton {
   background: var(--color-accent);
+  border: 0;
   border-radius: var(--radius-lg);
   color: white;
+  cursor: pointer;
+  font-family: inherit;
   font-weight: 600;
   font-size: var(--font-size-sm);
   margin-top: var(--space-3);
@@ -71,12 +75,14 @@
     transform var(--transition-fast);
 }
 
-.actionLink:hover {
+.actionLink:hover,
+.actionButton:hover {
   background: var(--color-accent-hover);
   box-shadow: 0 4px 12px var(--color-accent-glow);
 }
 
-.actionLink:active {
+.actionLink:active,
+.actionButton:active {
   transform: scale(0.98);
 }
 

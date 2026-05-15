@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { configureSdkBaseUrl } from "@real-demo/sdk";
 import {
   isRouteErrorResponse,
   Links,
@@ -28,6 +29,12 @@ import { initializeI18n } from "../shared/lib/i18n";
 const APP_RUNTIME_API_BASE_URL_SENTINEL = "__APP_RUNTIME_API_BASE_URL__";
 const i18n = initializeI18n(resources);
 const runtimeConfigScript = `window.__APP_CONFIG__ = window.__APP_CONFIG__ ?? { APP_RUNTIME_API_BASE_URL: "${APP_RUNTIME_API_BASE_URL_SENTINEL}" };`;
+
+// Wire the SDK's default base URL exactly once, at the root of the app shell.
+// Previously this lived in `shared/config/env.ts` as a module-eval side
+// effect, which is fragile under HMR (the module re-evaluates and re-runs the
+// configure call out of order) and SSR test harnesses (the module loads twice).
+configureSdkBaseUrl(environment.apiBaseUrl);
 
 export const meta = defaultMeta;
 

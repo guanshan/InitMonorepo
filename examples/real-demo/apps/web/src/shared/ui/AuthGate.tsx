@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 
 import { useAuthStore } from "../store/auth-store";
+import { ErrorState } from "./ErrorState";
 import { LoadingState } from "./LoadingState";
 
 /**
@@ -23,12 +24,14 @@ export const AuthGate = ({ children }: PropsWithChildren) => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useAuthStore((s) => s.isLoading);
+  const error = useAuthStore((s) => s.error);
+  const refetch = useAuthStore((s) => s.refetch);
 
   const pathname = location.pathname;
   const isPublic = isPublicUiPath(pathname);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || error) return;
 
     if (!isAuthenticated && !isPublic) {
       const redirectTarget = `${pathname}${location.search}`;
@@ -43,7 +46,20 @@ export const AuthGate = ({ children }: PropsWithChildren) => {
     if (isAuthenticated && isPublic) {
       navigate("/", { replace: true });
     }
-  }, [isAuthenticated, isLoading, isPublic, location.search, navigate, pathname]);
+  }, [error, isAuthenticated, isLoading, isPublic, location.search, navigate, pathname]);
+
+  if (error) {
+    return (
+      <ErrorState
+        action={{
+          label: t("auth.error.retry"),
+          onClick: refetch,
+        }}
+        description={t("auth.error.description")}
+        title={t("auth.error.title")}
+      />
+    );
+  }
 
   if (isLoading) {
     return (

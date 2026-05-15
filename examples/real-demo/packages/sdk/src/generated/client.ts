@@ -6,14 +6,42 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminUserListResponseDtoOutput,
+  AdminUserMutationResponseDtoOutput,
+  AdminUserResponseDtoOutput,
   AuthApiFailureDto,
   AuthStateResponseDtoOutput,
   CaptchaChallengeResponseDtoOutput,
   ChangePasswordDto,
   ChangePasswordResponseDtoOutput,
+  ConfigSnapshotResponseDtoOutput,
+  CreateAdminUserDto,
+  CreateModelDto,
+  CreateProviderDto,
+  DiscoverModelsDto,
+  DiscoverModelsResponseDtoOutput,
   IoaStatusResponseDtoOutput,
+  ListModelsParams,
+  ListUsersParams,
+  ModelListResponseDtoOutput,
+  ModelResponseDtoOutput,
+  ModelsApiFailureDto,
+  MutationResponseDtoOutput,
+  PlaygroundRunDto,
+  PlaygroundRunResponseDtoOutput,
+  ProviderListResponseDtoOutput,
+  ProviderResponseDtoOutput,
+  ResetAdminUserPasswordDto,
   SessionUserResponseDtoOutput,
-  SignInDto
+  SettingsApiFailureDto,
+  SignInDto,
+  SystemSettingsResponseDtoOutput,
+  UpdateAdminUserDto,
+  UpdateModelDto,
+  UpdateProviderDto,
+  UpdateSystemSettingsDto,
+  UsersApiFailureDto,
+  VerifyModelResponseDtoOutput
 } from './model';
 
 import { customFetcher } from '../runtime/fetcher';
@@ -266,6 +294,1015 @@ export const getGetIoaLoginStatusUrl = () => {
 export const getIoaLoginStatus = async ( options?: RequestInit): Promise<getIoaLoginStatusResponse> => {
 
   return customFetcher<getIoaLoginStatusResponse>(getGetIoaLoginStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type listUsersResponse200 = {
+  data: AdminUserListResponseDtoOutput
+  status: 200
+}
+
+export type listUsersResponse401 = {
+  data: UsersApiFailureDto
+  status: 401
+}
+
+export type listUsersResponseSuccess = (listUsersResponse200) & {
+  headers: Headers;
+};
+export type listUsersResponseError = (listUsersResponse401) & {
+  headers: Headers;
+};
+
+export type listUsersResponse = (listUsersResponseSuccess | listUsersResponseError)
+
+export const getListUsersUrl = (params?: ListUsersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/users?${stringifiedParams}` : `/api/v1/users`
+}
+
+/**
+ * @summary List users
+ */
+export const listUsers = async (params?: ListUsersParams, options?: RequestInit): Promise<listUsersResponse> => {
+
+  return customFetcher<listUsersResponse>(getListUsersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type createUserResponse201 = {
+  data: AdminUserResponseDtoOutput
+  status: 201
+}
+
+export type createUserResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type createUserResponse409 = {
+  data: UsersApiFailureDto
+  status: 409
+}
+
+export type createUserResponseSuccess = (createUserResponse201) & {
+  headers: Headers;
+};
+export type createUserResponseError = (createUserResponse400 | createUserResponse409) & {
+  headers: Headers;
+};
+
+export type createUserResponse = (createUserResponseSuccess | createUserResponseError)
+
+export const getCreateUserUrl = () => {
+
+
+
+
+  return `/api/v1/users`
+}
+
+/**
+ * @summary Create a new user
+ */
+export const createUser = async (createAdminUserDto: CreateAdminUserDto, options?: RequestInit): Promise<createUserResponse> => {
+
+  return customFetcher<createUserResponse>(getCreateUserUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createAdminUserDto)
+  }
+);}
+
+
+
+export type getUserResponse200 = {
+  data: AdminUserResponseDtoOutput
+  status: 200
+}
+
+export type getUserResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type getUserResponseSuccess = (getUserResponse200) & {
+  headers: Headers;
+};
+export type getUserResponseError = (getUserResponse404) & {
+  headers: Headers;
+};
+
+export type getUserResponse = (getUserResponseSuccess | getUserResponseError)
+
+export const getGetUserUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}`
+}
+
+/**
+ * @summary Get a user by id
+ */
+export const getUser = async (userId: string, options?: RequestInit): Promise<getUserResponse> => {
+
+  return customFetcher<getUserResponse>(getGetUserUrl(userId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type updateUserResponse200 = {
+  data: AdminUserResponseDtoOutput
+  status: 200
+}
+
+export type updateUserResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type updateUserResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type updateUserResponseSuccess = (updateUserResponse200) & {
+  headers: Headers;
+};
+export type updateUserResponseError = (updateUserResponse400 | updateUserResponse404) & {
+  headers: Headers;
+};
+
+export type updateUserResponse = (updateUserResponseSuccess | updateUserResponseError)
+
+export const getUpdateUserUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}`
+}
+
+/**
+ * @summary Update an existing user
+ */
+export const updateUser = async (userId: string,
+    updateAdminUserDto: UpdateAdminUserDto, options?: RequestInit): Promise<updateUserResponse> => {
+
+  return customFetcher<updateUserResponse>(getUpdateUserUrl(userId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateAdminUserDto)
+  }
+);}
+
+
+
+export type deleteUserResponse200 = {
+  data: AdminUserMutationResponseDtoOutput
+  status: 200
+}
+
+export type deleteUserResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type deleteUserResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type deleteUserResponseSuccess = (deleteUserResponse200) & {
+  headers: Headers;
+};
+export type deleteUserResponseError = (deleteUserResponse400 | deleteUserResponse404) & {
+  headers: Headers;
+};
+
+export type deleteUserResponse = (deleteUserResponseSuccess | deleteUserResponseError)
+
+export const getDeleteUserUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}`
+}
+
+/**
+ * @summary Delete a user
+ */
+export const deleteUser = async (userId: string, options?: RequestInit): Promise<deleteUserResponse> => {
+
+  return customFetcher<deleteUserResponse>(getDeleteUserUrl(userId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+export type resetUserPasswordResponse200 = {
+  data: AdminUserMutationResponseDtoOutput
+  status: 200
+}
+
+export type resetUserPasswordResponse400 = {
+  data: UsersApiFailureDto
+  status: 400
+}
+
+export type resetUserPasswordResponse404 = {
+  data: UsersApiFailureDto
+  status: 404
+}
+
+export type resetUserPasswordResponseSuccess = (resetUserPasswordResponse200) & {
+  headers: Headers;
+};
+export type resetUserPasswordResponseError = (resetUserPasswordResponse400 | resetUserPasswordResponse404) & {
+  headers: Headers;
+};
+
+export type resetUserPasswordResponse = (resetUserPasswordResponseSuccess | resetUserPasswordResponseError)
+
+export const getResetUserPasswordUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}/password`
+}
+
+/**
+ * @summary Reset a user's password
+ */
+export const resetUserPassword = async (userId: string,
+    resetAdminUserPasswordDto: ResetAdminUserPasswordDto, options?: RequestInit): Promise<resetUserPasswordResponse> => {
+
+  return customFetcher<resetUserPasswordResponse>(getResetUserPasswordUrl(userId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(resetAdminUserPasswordDto)
+  }
+);}
+
+
+
+export type getSystemSettingsResponse200 = {
+  data: SystemSettingsResponseDtoOutput
+  status: 200
+}
+
+export type getSystemSettingsResponse401 = {
+  data: SettingsApiFailureDto
+  status: 401
+}
+
+export type getSystemSettingsResponseSuccess = (getSystemSettingsResponse200) & {
+  headers: Headers;
+};
+export type getSystemSettingsResponseError = (getSystemSettingsResponse401) & {
+  headers: Headers;
+};
+
+export type getSystemSettingsResponse = (getSystemSettingsResponseSuccess | getSystemSettingsResponseError)
+
+export const getGetSystemSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/settings/system`
+}
+
+/**
+ * @summary Get the current system settings
+ */
+export const getSystemSettings = async ( options?: RequestInit): Promise<getSystemSettingsResponse> => {
+
+  return customFetcher<getSystemSettingsResponse>(getGetSystemSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type updateSystemSettingsResponse200 = {
+  data: SystemSettingsResponseDtoOutput
+  status: 200
+}
+
+export type updateSystemSettingsResponse400 = {
+  data: SettingsApiFailureDto
+  status: 400
+}
+
+export type updateSystemSettingsResponse401 = {
+  data: SettingsApiFailureDto
+  status: 401
+}
+
+export type updateSystemSettingsResponseSuccess = (updateSystemSettingsResponse200) & {
+  headers: Headers;
+};
+export type updateSystemSettingsResponseError = (updateSystemSettingsResponse400 | updateSystemSettingsResponse401) & {
+  headers: Headers;
+};
+
+export type updateSystemSettingsResponse = (updateSystemSettingsResponseSuccess | updateSystemSettingsResponseError)
+
+export const getUpdateSystemSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/settings/system`
+}
+
+/**
+ * @summary Update the system settings
+ */
+export const updateSystemSettings = async (updateSystemSettingsDto: UpdateSystemSettingsDto, options?: RequestInit): Promise<updateSystemSettingsResponse> => {
+
+  return customFetcher<updateSystemSettingsResponse>(getUpdateSystemSettingsUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateSystemSettingsDto)
+  }
+);}
+
+
+
+export type listModelsResponse200 = {
+  data: ModelListResponseDtoOutput
+  status: 200
+}
+
+export type listModelsResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type listModelsResponseSuccess = (listModelsResponse200) & {
+  headers: Headers;
+};
+export type listModelsResponseError = (listModelsResponse401) & {
+  headers: Headers;
+};
+
+export type listModelsResponse = (listModelsResponseSuccess | listModelsResponseError)
+
+export const getListModelsUrl = (params?: ListModelsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/models?${stringifiedParams}` : `/api/v1/models`
+}
+
+/**
+ * @summary List models
+ */
+export const listModels = async (params?: ListModelsParams, options?: RequestInit): Promise<listModelsResponse> => {
+
+  return customFetcher<listModelsResponse>(getListModelsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type createModelResponse201 = {
+  data: ModelResponseDtoOutput
+  status: 201
+}
+
+export type createModelResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type createModelResponseSuccess = (createModelResponse201) & {
+  headers: Headers;
+};
+export type createModelResponseError = (createModelResponse400) & {
+  headers: Headers;
+};
+
+export type createModelResponse = (createModelResponseSuccess | createModelResponseError)
+
+export const getCreateModelUrl = () => {
+
+
+
+
+  return `/api/v1/models`
+}
+
+/**
+ * @summary Create a model
+ */
+export const createModel = async (createModelDto: CreateModelDto, options?: RequestInit): Promise<createModelResponse> => {
+
+  return customFetcher<createModelResponse>(getCreateModelUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createModelDto)
+  }
+);}
+
+
+
+export type getModelResponse200 = {
+  data: ModelResponseDtoOutput
+  status: 200
+}
+
+export type getModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type getModelResponseSuccess = (getModelResponse200) & {
+  headers: Headers;
+};
+export type getModelResponseError = (getModelResponse404) & {
+  headers: Headers;
+};
+
+export type getModelResponse = (getModelResponseSuccess | getModelResponseError)
+
+export const getGetModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}`
+}
+
+/**
+ * @summary Get a model
+ */
+export const getModel = async (modelId: string, options?: RequestInit): Promise<getModelResponse> => {
+
+  return customFetcher<getModelResponse>(getGetModelUrl(modelId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type updateModelResponse200 = {
+  data: ModelResponseDtoOutput
+  status: 200
+}
+
+export type updateModelResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type updateModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type updateModelResponseSuccess = (updateModelResponse200) & {
+  headers: Headers;
+};
+export type updateModelResponseError = (updateModelResponse400 | updateModelResponse404) & {
+  headers: Headers;
+};
+
+export type updateModelResponse = (updateModelResponseSuccess | updateModelResponseError)
+
+export const getUpdateModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}`
+}
+
+/**
+ * @summary Update a model
+ */
+export const updateModel = async (modelId: string,
+    updateModelDto: UpdateModelDto, options?: RequestInit): Promise<updateModelResponse> => {
+
+  return customFetcher<updateModelResponse>(getUpdateModelUrl(modelId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateModelDto)
+  }
+);}
+
+
+
+export type deleteModelResponse200 = {
+  data: MutationResponseDtoOutput
+  status: 200
+}
+
+export type deleteModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type deleteModelResponseSuccess = (deleteModelResponse200) & {
+  headers: Headers;
+};
+export type deleteModelResponseError = (deleteModelResponse404) & {
+  headers: Headers;
+};
+
+export type deleteModelResponse = (deleteModelResponseSuccess | deleteModelResponseError)
+
+export const getDeleteModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}`
+}
+
+/**
+ * @summary Delete a model
+ */
+export const deleteModel = async (modelId: string, options?: RequestInit): Promise<deleteModelResponse> => {
+
+  return customFetcher<deleteModelResponse>(getDeleteModelUrl(modelId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+export type verifyModelResponse200 = {
+  data: VerifyModelResponseDtoOutput
+  status: 200
+}
+
+export type verifyModelResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type verifyModelResponseSuccess = (verifyModelResponse200) & {
+  headers: Headers;
+};
+export type verifyModelResponseError = (verifyModelResponse404) & {
+  headers: Headers;
+};
+
+export type verifyModelResponse = (verifyModelResponseSuccess | verifyModelResponseError)
+
+export const getVerifyModelUrl = (modelId: string,) => {
+
+
+
+
+  return `/api/v1/models/${modelId}/verify`
+}
+
+/**
+ * @summary Test connectivity to a model with a lightweight upstream call
+ */
+export const verifyModel = async (modelId: string, options?: RequestInit): Promise<verifyModelResponse> => {
+
+  return customFetcher<verifyModelResponse>(getVerifyModelUrl(modelId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+export type listProvidersResponse200 = {
+  data: ProviderListResponseDtoOutput
+  status: 200
+}
+
+export type listProvidersResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type listProvidersResponseSuccess = (listProvidersResponse200) & {
+  headers: Headers;
+};
+export type listProvidersResponseError = (listProvidersResponse401) & {
+  headers: Headers;
+};
+
+export type listProvidersResponse = (listProvidersResponseSuccess | listProvidersResponseError)
+
+export const getListProvidersUrl = () => {
+
+
+
+
+  return `/api/v1/providers`
+}
+
+/**
+ * @summary List providers
+ */
+export const listProviders = async ( options?: RequestInit): Promise<listProvidersResponse> => {
+
+  return customFetcher<listProvidersResponse>(getListProvidersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type createProviderResponse201 = {
+  data: ProviderResponseDtoOutput
+  status: 201
+}
+
+export type createProviderResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type createProviderResponseSuccess = (createProviderResponse201) & {
+  headers: Headers;
+};
+export type createProviderResponseError = (createProviderResponse400) & {
+  headers: Headers;
+};
+
+export type createProviderResponse = (createProviderResponseSuccess | createProviderResponseError)
+
+export const getCreateProviderUrl = () => {
+
+
+
+
+  return `/api/v1/providers`
+}
+
+/**
+ * @summary Create a provider
+ */
+export const createProvider = async (createProviderDto: CreateProviderDto, options?: RequestInit): Promise<createProviderResponse> => {
+
+  return customFetcher<createProviderResponse>(getCreateProviderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createProviderDto)
+  }
+);}
+
+
+
+export type getProviderResponse200 = {
+  data: ProviderResponseDtoOutput
+  status: 200
+}
+
+export type getProviderResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type getProviderResponseSuccess = (getProviderResponse200) & {
+  headers: Headers;
+};
+export type getProviderResponseError = (getProviderResponse404) & {
+  headers: Headers;
+};
+
+export type getProviderResponse = (getProviderResponseSuccess | getProviderResponseError)
+
+export const getGetProviderUrl = (providerId: string,) => {
+
+
+
+
+  return `/api/v1/providers/${providerId}`
+}
+
+/**
+ * @summary Get a provider
+ */
+export const getProvider = async (providerId: string, options?: RequestInit): Promise<getProviderResponse> => {
+
+  return customFetcher<getProviderResponse>(getGetProviderUrl(providerId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type updateProviderResponse200 = {
+  data: ProviderResponseDtoOutput
+  status: 200
+}
+
+export type updateProviderResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type updateProviderResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type updateProviderResponseSuccess = (updateProviderResponse200) & {
+  headers: Headers;
+};
+export type updateProviderResponseError = (updateProviderResponse400 | updateProviderResponse404) & {
+  headers: Headers;
+};
+
+export type updateProviderResponse = (updateProviderResponseSuccess | updateProviderResponseError)
+
+export const getUpdateProviderUrl = (providerId: string,) => {
+
+
+
+
+  return `/api/v1/providers/${providerId}`
+}
+
+/**
+ * @summary Update a provider
+ */
+export const updateProvider = async (providerId: string,
+    updateProviderDto: UpdateProviderDto, options?: RequestInit): Promise<updateProviderResponse> => {
+
+  return customFetcher<updateProviderResponse>(getUpdateProviderUrl(providerId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateProviderDto)
+  }
+);}
+
+
+
+export type deleteProviderResponse200 = {
+  data: MutationResponseDtoOutput
+  status: 200
+}
+
+export type deleteProviderResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type deleteProviderResponse404 = {
+  data: ModelsApiFailureDto
+  status: 404
+}
+
+export type deleteProviderResponseSuccess = (deleteProviderResponse200) & {
+  headers: Headers;
+};
+export type deleteProviderResponseError = (deleteProviderResponse400 | deleteProviderResponse404) & {
+  headers: Headers;
+};
+
+export type deleteProviderResponse = (deleteProviderResponseSuccess | deleteProviderResponseError)
+
+export const getDeleteProviderUrl = (providerId: string,) => {
+
+
+
+
+  return `/api/v1/providers/${providerId}`
+}
+
+/**
+ * @summary Delete a provider
+ */
+export const deleteProvider = async (providerId: string, options?: RequestInit): Promise<deleteProviderResponse> => {
+
+  return customFetcher<deleteProviderResponse>(getDeleteProviderUrl(providerId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+export type discoverProviderModelsResponse200 = {
+  data: DiscoverModelsResponseDtoOutput
+  status: 200
+}
+
+export type discoverProviderModelsResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type discoverProviderModelsResponseSuccess = (discoverProviderModelsResponse200) & {
+  headers: Headers;
+};
+export type discoverProviderModelsResponseError = (discoverProviderModelsResponse400) & {
+  headers: Headers;
+};
+
+export type discoverProviderModelsResponse = (discoverProviderModelsResponseSuccess | discoverProviderModelsResponseError)
+
+export const getDiscoverProviderModelsUrl = () => {
+
+
+
+
+  return `/api/v1/providers/discover`
+}
+
+/**
+ * @summary List models exposed by a provider, using stored creds or an ad-hoc credential triple
+ */
+export const discoverProviderModels = async (discoverModelsDto: DiscoverModelsDto, options?: RequestInit): Promise<discoverProviderModelsResponse> => {
+
+  return customFetcher<discoverProviderModelsResponse>(getDiscoverProviderModelsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(discoverModelsDto)
+  }
+);}
+
+
+
+export type runPlaygroundResponse200 = {
+  data: PlaygroundRunResponseDtoOutput
+  status: 200
+}
+
+export type runPlaygroundResponse400 = {
+  data: ModelsApiFailureDto
+  status: 400
+}
+
+export type runPlaygroundResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type runPlaygroundResponseSuccess = (runPlaygroundResponse200) & {
+  headers: Headers;
+};
+export type runPlaygroundResponseError = (runPlaygroundResponse400 | runPlaygroundResponse401) & {
+  headers: Headers;
+};
+
+export type runPlaygroundResponse = (runPlaygroundResponseSuccess | runPlaygroundResponseError)
+
+export const getRunPlaygroundUrl = () => {
+
+
+
+
+  return `/api/v1/playground`
+}
+
+/**
+ * @summary Run a non-streaming inference call
+ */
+export const runPlayground = async (playgroundRunDto: PlaygroundRunDto, options?: RequestInit): Promise<runPlaygroundResponse> => {
+
+  return customFetcher<runPlaygroundResponse>(getRunPlaygroundUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(playgroundRunDto)
+  }
+);}
+
+
+
+export type getConfigSnapshotResponse200 = {
+  data: ConfigSnapshotResponseDtoOutput
+  status: 200
+}
+
+export type getConfigSnapshotResponse401 = {
+  data: ModelsApiFailureDto
+  status: 401
+}
+
+export type getConfigSnapshotResponseSuccess = (getConfigSnapshotResponse200) & {
+  headers: Headers;
+};
+export type getConfigSnapshotResponseError = (getConfigSnapshotResponse401) & {
+  headers: Headers;
+};
+
+export type getConfigSnapshotResponse = (getConfigSnapshotResponseSuccess | getConfigSnapshotResponseError)
+
+export const getGetConfigSnapshotUrl = () => {
+
+
+
+
+  return `/api/v1/config/snapshot`
+}
+
+/**
+ * @summary Read providers / templates / models in one call. API keys are returned masked.
+ */
+export const getConfigSnapshot = async ( options?: RequestInit): Promise<getConfigSnapshotResponse> => {
+
+  return customFetcher<getConfigSnapshotResponse>(getGetConfigSnapshotUrl(),
   {
     ...options,
     method: 'GET'

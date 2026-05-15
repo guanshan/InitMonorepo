@@ -36,3 +36,9 @@ export const environment = {
   defaultLocale: parsedEnvironment.VITE_DEFAULT_LOCALE,
   defaultTheme: parsedEnvironment.VITE_DEFAULT_THEME,
 };
+
+// Note: the SDK's default base URL must be configured exactly once, after the
+// runtime config script has populated `window.__APP_CONFIG__` but before any
+// hook fires its first request. That wiring lives in `app/root.tsx` —
+// keeping it out of module init avoids HMR / SSR ordering footguns where the
+// side effect would run twice or before the runtime config loads.

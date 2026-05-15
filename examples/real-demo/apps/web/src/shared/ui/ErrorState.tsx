@@ -1,11 +1,17 @@
 import styles from "./StatePanel.module.css";
 
+interface ErrorStateAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface ErrorStateProps {
+  action?: ErrorStateAction;
   description: string;
   title: string;
 }
 
-export const ErrorState = ({ description, title }: ErrorStateProps) => (
+export const ErrorState = ({ action, description, title }: ErrorStateProps) => (
   <section className={styles.container}>
     <div className={styles.errorIcon}>
       <svg
@@ -24,5 +30,14 @@ export const ErrorState = ({ description, title }: ErrorStateProps) => (
     </div>
     <h1 className={styles.title}>{title}</h1>
     <p className={styles.description}>{description}</p>
+    {action ? (
+      <button
+        className={styles.actionButton}
+        onClick={action.onClick}
+        type="button"
+      >
+        {action.label}
+      </button>
+    ) : null}
   </section>
 );

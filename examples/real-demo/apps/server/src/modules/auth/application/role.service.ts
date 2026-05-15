@@ -22,7 +22,6 @@ export interface RoleResolution {
  */
 @Injectable()
 export class RoleService {
-  // eslint-disable-next-line @typescript-eslint/require-await
   async resolveUserRole(input: ResolveInput): Promise<RoleResolution> {
     return {
       role: input.baseRole,

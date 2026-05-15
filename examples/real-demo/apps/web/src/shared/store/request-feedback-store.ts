@@ -1,10 +1,11 @@
 import { createRequestId } from "@real-demo/shared";
 import { create } from "zustand";
 
-type RequestFeedbackVariant = "error" | "info";
+type RequestFeedbackVariant = "error" | "info" | "success";
 
 interface RequestFeedbackItem {
-  description: string;
+  /** Optional second line under the title; omit for terse confirmations. */
+  description?: string;
   id: string;
   title: string;
   variant: RequestFeedbackVariant;

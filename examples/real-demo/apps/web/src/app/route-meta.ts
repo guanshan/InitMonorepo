@@ -17,6 +17,31 @@ export const routeMetaCopy = {
     description: "The page you requested does not exist.",
     title: "Page not found",
   },
+  users: {
+    description:
+      "Manage the people who can sign in to the demo: invite new users, adjust roles, and reset credentials.",
+    title: "Users",
+  },
+  settings: {
+    description:
+      "Tune basic system preferences: branding, default theme, session limits, and broadcasted announcements.",
+    title: "Settings",
+  },
+  providers: {
+    description:
+      "Manage the upstream LLM providers and their credentials.",
+    title: "Providers",
+  },
+  models: {
+    description:
+      "Register, verify, and govern the LLM endpoints powering the workspace.",
+    title: "Model management",
+  },
+  playground: {
+    description:
+      "Send prompts to any registered model and inspect responses side by side.",
+    title: "Model playground",
+  },
 } as const;
 
 export const defaultMeta = () => [

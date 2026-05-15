@@ -1,6 +1,11 @@
 /**
- * Demo SDK surface. The user CRUD endpoints are gone, so the previous
- * Orval-generated client/hooks are too — run `pnpm codegen` to regenerate
- * once the server exposes new endpoints worth typing.
+ * Public SDK surface. Re-exports the Orval-generated client so consumers go
+ * through one entry point instead of hand-rolled fetch wrappers. Regenerate
+ * via `pnpm codegen` whenever the OpenAPI document changes.
  */
-export { ApiRequestError, customFetcher } from "./runtime/fetcher";
+export {
+  ApiRequestError,
+  configureSdkBaseUrl,
+  customFetcher,
+} from "./runtime/fetcher";
+export * from "./generated/client";

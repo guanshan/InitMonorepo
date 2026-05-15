@@ -1,0 +1,103 @@
+.presets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.presetsHint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.presetsRow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.presetChip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.presetChip:hover {
+  background: var(--color-surface-hover, rgba(255, 255, 255, 0.06));
+  border-color: var(--color-border-strong);
+}
+
+.presetChipLogo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+
+.keyInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.keyInput {
+  padding-right: 36px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.02em;
+  width: 100%;
+}
+
+.keyToggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.keyToggle:hover {
+  background: var(--color-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--color-text-primary);
+}
+
+.advanced {
+  margin-top: var(--space-1);
+  border-top: 1px dashed var(--color-border-soft);
+  padding-top: var(--space-2);
+}
+
+.advancedSummary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  user-select: none;
+  margin-bottom: var(--space-2);
+}
+
+.advancedSummary:hover {
+  color: var(--color-text-primary);
+}

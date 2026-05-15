@@ -25,7 +25,13 @@ model User {
   email         String     @unique
   emailVerified Boolean    @default(false) @map("email_verified")
   image         String     @default("") @db.VarChar(512)
-  username      String     @default("")
+  // Username is a logical identity in this system (UI uses it as a search
+  // field, the API rejects duplicates with a 409). Enforced both in the
+  // service (friendly pre-check, see UsersService) and at the database level
+  // so two concurrent writes can't slip past the application check. Empty
+  // defaults from earlier seeds are backfilled to `user_<id>` in the
+  // matching migration before the unique index is created.
+  username      String     @unique
   role          UserRole   @default(USER)
   department    Json       @default("[]")
   status        UserStatus @default(ACTIVE)
@@ -69,4 +75,55 @@ model Account {
   @@unique([accountId, providerId], name: "account_account_provider_uk")
   @@index([userId])
   @@map("account")
+}
+
+model SystemSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(128)
+  value     String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_setting")
+}
+
+model Provider {
+  id             Int       @id @default(autoincrement())
+  providerKey    String    @unique @map("provider_key") @db.VarChar(64)
+  name           String    @db.VarChar(128)
+  type           String    @db.VarChar(32)
+  vendor         String    @db.VarChar(32)
+  baseUrl        String    @map("base_url") @db.VarChar(512)
+  apiKeyCipher   String    @map("api_key_cipher") @db.Text
+  apiKeyPreview  String    @default("") @map("api_key_preview") @db.VarChar(64)
+  lastVerifiedAt DateTime? @map("last_verified_at")
+  lastError      String?   @map("last_error") @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  models Model[]
+
+  @@map("provider")
+}
+
+model Model {
+  id             Int       @id @default(autoincrement())
+  modelKey       String    @unique @map("model_key") @db.VarChar(64)
+  name           String    @db.VarChar(128)
+  providerId     Int       @map("provider_id")
+  modelIdent     String    @map("model_ident") @db.VarChar(191)
+  description    String    @default("") @db.VarChar(500)
+  enabled        Boolean   @default(true)
+  capabilities   Json
+  temperature    Float?
+  maxTokens      Int?      @map("max_tokens")
+  lastVerifiedAt DateTime? @map("last_verified_at")
+  lastError      String?   @map("last_error") @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@map("model")
 }

@@ -10,6 +10,9 @@ import { CacheModule } from "./infrastructure/cache/cache.module";
 import { PrismaModule } from "./infrastructure/prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { HealthModule } from "./modules/health/health.module";
+import { ModelsModule } from "./modules/models/models.module";
+import { SettingsModule } from "./modules/settings/settings.module";
+import { UsersModule } from "./modules/users/users.module";
 
 @Module({
   imports: [
@@ -49,6 +52,9 @@ import { HealthModule } from "./modules/health/health.module";
     CacheModule,
     HealthModule,
     AuthModule,
+    UsersModule,
+    SettingsModule,
+    ModelsModule,
   ],
   providers: [
     {

@@ -47,6 +47,7 @@ interface AuthState {
   error: Error | null;
   setUser: (user: SessionUser | null) => void;
   logout: () => void;
+  refetch: () => void;
 }
 
 export const setCurrentUserCache = (
@@ -91,6 +92,10 @@ export function useAuthStore<T>(selector?: (state: AuthState) => T) {
     clearCurrentUserCache(queryClient);
   }, [queryClient]);
 
+  const refetch = useCallback(() => {
+    void queryClient.refetchQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+  }, [queryClient]);
+
   const state: AuthState = {
     user: query.data ?? null,
     isAuthenticated: Boolean(query.data),
@@ -98,6 +103,7 @@ export function useAuthStore<T>(selector?: (state: AuthState) => T) {
     error: query.error instanceof Error ? query.error : null,
     setUser,
     logout,
+    refetch,
   };
 
   return selector ? selector(state) : state;

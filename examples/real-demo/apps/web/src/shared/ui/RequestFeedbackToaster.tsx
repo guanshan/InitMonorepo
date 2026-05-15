@@ -32,7 +32,9 @@ export const RequestFeedbackToaster = () => {
               &#x2715;
             </button>
           </div>
-          <p className={styles.description}>{item.description}</p>
+          {item.description ? (
+            <p className={styles.description}>{item.description}</p>
+          ) : null}
         </section>
       ))}
     </div>

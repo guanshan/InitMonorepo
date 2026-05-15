@@ -53,7 +53,9 @@ const reportRequestError = (
   }
 
   if (silent) {
-    console.warn("silent request error", error);
+    if (import.meta.env.DEV) {
+      console.warn("silent request error", error);
+    }
     return;
   }
 
@@ -80,7 +82,9 @@ const reportRequestError = (
     title: i18n.t("requestFeedback.generic.title"),
     variant: "error",
   });
-  console.error(error);
+  if (import.meta.env.DEV) {
+    console.error(error);
+  }
 };
 
 export const queryClient = new QueryClient({

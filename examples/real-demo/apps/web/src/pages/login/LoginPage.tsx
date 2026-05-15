@@ -172,18 +172,16 @@ export const LoginPage = () => {
   return (
     <div className={styles.page}>
       <aside className={styles.hero} aria-hidden="true">
-        <div className={styles.heroBackdrop}>
-          <div className={styles.heroOrbOne} />
-          <div className={styles.heroOrbTwo} />
-        </div>
+        <div className={styles.heroScrimTop} />
+        <div className={styles.heroScrimBottom} />
         <div className={styles.heroContent}>
           <div className={styles.heroBrand}>
             <span className={styles.heroLogo} aria-hidden="true">
               <img
                 src={`${import.meta.env.BASE_URL}favicon.svg`}
                 alt=""
-                width={32}
-                height={32}
+                width={22}
+                height={22}
               />
             </span>
             <span className={styles.heroBrandName}>{t("app.title", { appName: "Real Demo" })}</span>
@@ -198,6 +196,20 @@ export const LoginPage = () => {
 
       <section className={styles.formSide}>
         <div className={styles.card}>
+          <div className={styles.mobileBrand}>
+            <span className={styles.mobileBrandLogo} aria-hidden="true">
+              <img
+                src={`${import.meta.env.BASE_URL}favicon.svg`}
+                alt=""
+                width={28}
+                height={28}
+              />
+            </span>
+            <span className={styles.mobileBrandName}>
+              {t("app.title", { appName: "Real Demo" })}
+            </span>
+          </div>
+
           <div className={styles.header}>
             <h1 className={styles.title}>{t("login.title")}</h1>
             <p className={styles.subtitle}>{t("login.subtitle")}</p>
