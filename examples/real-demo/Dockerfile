@@ -50,7 +50,14 @@ COPY --from=prune-web /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 
 COPY --from=prune-web /app/out/full/ .
-RUN pnpm turbo build --filter=@real-demo/web
+# Build deps explicitly instead of `turbo build --filter=@real-demo/web`.
+# `turbo prune` keeps `sdk#generate-sdk` → `server#openapi` in turbo.json,
+# but server is excluded from the web subset, which turbo 2.x rejects.
+# The orval-generated SDK sources are committed, so no codegen is needed here.
+RUN pnpm --filter @real-demo/shared build \
+  && pnpm --filter @real-demo/ui build \
+  && pnpm --filter @real-demo/sdk build \
+  && pnpm --filter @real-demo/web exec react-router build
 
 # =============================================================================
 # Stage 6: Produce a runtime-only server bundle

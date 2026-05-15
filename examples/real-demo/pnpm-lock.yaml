@@ -144,6 +144,9 @@ importers:
       '@nestjs/testing':
         specifier: ^11.1.21
         version: 11.1.21(@nestjs/common@11.1.21(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)(@nestjs/platform-express@11.1.21)
+      '@real-demo/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@types/cookie-parser':
         specifier: ^1.4.10
         version: 1.4.10(@types/express@5.0.6)
@@ -256,6 +259,9 @@ importers:
       '@react-router/dev':
         specifier: 7.15.1
         version: 7.15.1(@types/node@25.8.0)(babel-plugin-macros@3.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.15.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(terser@5.47.1)(tsx@4.22.0)(typescript@6.0.3)(vite@8.0.13(@types/node@25.8.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.22.0)(yaml@2.9.0))(yaml@2.9.0)
+      '@real-demo/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -291,6 +297,9 @@ importers:
 
   packages/sdk:
     devDependencies:
+      '@real-demo/config':
+        specifier: workspace:*
+        version: link:../config
       '@tanstack/react-query':
         specifier: ^5.100.10
         version: 5.100.10(react@19.2.6)
@@ -309,6 +318,10 @@ importers:
       zod:
         specifier: ^4.4.3
         version: 4.4.3
+    devDependencies:
+      '@real-demo/config':
+        specifier: workspace:*
+        version: link:../config
 
   packages/ui:
     dependencies:
@@ -316,6 +329,9 @@ importers:
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
     devDependencies:
+      '@real-demo/config':
+        specifier: workspace:*
+        version: link:../config
       '@storybook/addon-a11y':
         specifier: ^10.4.0
         version: 10.4.0(storybook@10.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@19.2.14)(prettier@3.8.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))

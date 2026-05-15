@@ -45,6 +45,7 @@
     }
   },
   "devDependencies": {
+    "@real-demo/config": "workspace:*",
     "@tanstack/react-query": "^5.100.10",
     "@types/react": "^19.2.14",
     "orval": "^8.10.0",
