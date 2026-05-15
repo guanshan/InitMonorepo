@@ -41,8 +41,7 @@ const normaliseDepartment = (raw: unknown): string[] => {
 };
 
 interface UserRow {
-  id: number;
-  userId: string;
+  id: string;
   email: string;
   emailVerified: boolean;
   name: string;
@@ -93,7 +92,7 @@ export class PrismaUsersRepository implements UsersRepositoryPort {
   }
 
   async findByUserId(userId: string): Promise<AdminUserRecord | null> {
-    const row = await this.prisma.user.findUnique({ where: { userId } });
+    const row = await this.prisma.user.findUnique({ where: { id: userId } });
     return row ? this.toRecord(row) : null;
   }
 
@@ -154,7 +153,7 @@ export class PrismaUsersRepository implements UsersRepositoryPort {
   ): Promise<AdminUserRecord> {
     try {
       const row = await this.prisma.user.update({
-        where: { userId },
+        where: { id: userId },
         data: {
           ...(input.name !== undefined ? { name: input.name } : {}),
           ...(input.username !== undefined ? { username: input.username } : {}),
@@ -174,11 +173,11 @@ export class PrismaUsersRepository implements UsersRepositoryPort {
   }
 
   async delete(userId: string): Promise<void> {
-    await this.prisma.user.delete({ where: { userId } });
+    await this.prisma.user.delete({ where: { id: userId } });
   }
 
   async resetPassword(userId: string, hashedPassword: string): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return;
     }
@@ -207,7 +206,7 @@ export class PrismaUsersRepository implements UsersRepositoryPort {
   private toRecord(row: UserRow): AdminUserRecord {
     return {
       id: row.id,
-      userId: row.userId,
+      userId: row.id,
       email: row.email,
       emailVerified: row.emailVerified,
       name: row.name,

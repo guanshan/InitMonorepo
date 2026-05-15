@@ -11,6 +11,10 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { cleanupOpenApiDoc } from "nestjs-zod";
+import { toNodeHandler } from "better-auth/node";
+
+import { BETTER_AUTH_TOKEN } from "./modules/auth/auth.tokens";
+import type { BetterAuthInstance } from "./modules/auth/auth.config";
 
 import { AppModule } from "./app.module";
 import { cacheKeys } from "./common/cache/cache-keys";
@@ -34,7 +38,7 @@ const frontendIndexHtmlPath = resolve(frontendDistDirectory, "index.html");
 const healthRouteSegments = ["health", "ready", "live"] as const;
 const STATIC_ASSET_MAX_AGE_SECONDS = 31_536_000;
 const WRITE_API_RATE_LIMIT_MAX_REQUESTS = 10;
-const WRITE_API_RATE_LIMIT_WINDOW_SECONDS = 60;
+const WRITE_API_RATE_LIMIT_WINDOW_SECONDS = 1;
 const MEMORY_RATE_LIMIT_MAX_ENTRIES = 10_000;
 
 interface ResponseLike {
@@ -371,6 +375,18 @@ const getClientIpAddress = (request: FrontendRequestLike) => {
   );
 };
 
+// These POST endpoints are action/query operations that carry a body but do
+// not create or modify persisted resources — exempting them prevents the
+// model-setup wizard (discover × 2 + N creates + N verifies) from tripping
+// the rate limiter before the user has finished configuring a single model.
+const WRITE_RATE_LIMIT_EXEMPT_PATTERNS = [
+  /\/providers\/discover$/,
+  /\/models\/[^/]+\/verify$/,
+];
+
+const isWriteRateLimitExempt = (pathname: string): boolean =>
+  WRITE_RATE_LIMIT_EXEMPT_PATTERNS.some((pattern) => pattern.test(pathname));
+
 const createWriteApiRateLimitMiddleware = (
   app: NestExpressApplication,
   environment: ReturnType<typeof loadEnvironment>,
@@ -446,7 +462,14 @@ const createWriteApiRateLimitMiddleware = (
       return;
     }
 
-    if (!getRequestPathname(request).startsWith(apiPrefix)) {
+    const pathname = getRequestPathname(request);
+
+    if (!pathname.startsWith(apiPrefix)) {
+      next();
+      return;
+    }
+
+    if (isWriteRateLimitExempt(pathname)) {
       next();
       return;
     }
@@ -661,6 +684,32 @@ export const configureApp = async (app: NestExpressApplication) => {
   app.set("trust proxy", environment.trustProxy);
   app.use(cookieParser());
   app.use(attachRequestId);
+
+  // Mount BetterAuth handler at /api/auth/* — this runs before NestJS routing
+  // so all BetterAuth-native routes (OAuth callbacks, session API) are handled
+  // without touching the NestJS guard or global prefix.
+  const betterAuthInstance = app.get<BetterAuthInstance>(BETTER_AUTH_TOKEN);
+  const expressApp = app.getHttpAdapter().getInstance() as {
+    all: (path: string, handler: (...args: unknown[]) => void) => void;
+  };
+  // Block the native email/password sign-in endpoint so all logins must go
+  // through /api/v1/auth/sign-in (which enforces CAPTCHA and rate limiting).
+  expressApp.all(
+    "/api/auth/sign-in/email",
+    ((_req: unknown, res: unknown) => {
+      const r = res as {
+        writeHead: (code: number, headers: Record<string, string>) => void;
+        end: (body: string) => void;
+      };
+      r.writeHead(403, { "content-type": "application/json" });
+      r.end(JSON.stringify({ message: "Use /api/v1/auth/sign-in instead." }));
+    }) as (...args: unknown[]) => void,
+  );
+  // Express v5 requires named wildcards: /*splat instead of /*
+  expressApp.all(
+    "/api/auth/*splat",
+    toNodeHandler(betterAuthInstance) as (...args: unknown[]) => void,
+  );
   app.use(
     createSecurityHeadersMiddleware(
       environment,

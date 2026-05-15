@@ -3,7 +3,10 @@ import type { UserRole, UserStatus } from "../../auth/domain/auth.types";
 export const USERS_REPOSITORY_PORT = Symbol("USERS_REPOSITORY_PORT");
 
 export interface AdminUserRecord {
-  id: number;
+  // id is now the cuid string primary key (was `userId` before the schema migration).
+  id: string;
+  // userId is an alias for id kept for backward compatibility with existing
+  // controller responses and the generated SDK.
   userId: string;
   email: string;
   emailVerified: boolean;

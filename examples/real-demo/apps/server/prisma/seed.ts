@@ -80,6 +80,7 @@ const SEED_ACCOUNTS: SeedAccount[] = [
 const upsertAccount = async (account: SeedAccount) => {
   const hashedPassword = await hashPassword(account.password);
 
+  // User.id is now a cuid String; upsert by email (stable natural key).
   const user = await prisma.user.upsert({
     where: { email: account.email },
     update: {

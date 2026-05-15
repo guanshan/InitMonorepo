@@ -9,7 +9,7 @@ import type {
 } from "./users-repository.port";
 
 const baseRecord: AdminUserRecord = {
-  id: 7,
+  id: "u_target",
   userId: "u_target",
   email: "target@example.com",
   emailVerified: true,
@@ -133,7 +133,8 @@ describe("UsersService session-revocation hooks", () => {
     const { service, repo } = buildService();
     (repo.findByUsername as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ...baseRecord,
-      id: 99,
+      id: "cjld2cyuq0000t3rmniod1foy",
+      userId: "cjld2cyuq0000t3rmniod1foy",
       username: "target",
     });
 

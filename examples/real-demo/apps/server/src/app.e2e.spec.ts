@@ -20,14 +20,15 @@ import { CacheService } from "./infrastructure/cache/cache.service";
 import { PrismaService } from "./infrastructure/prisma/prisma.service";
 import { PasswordService } from "./modules/auth/application/password.service";
 
+// --- Types matching the updated Prisma schema (string PKs, BetterAuth fields) ---
+
 type StoredUser = {
-  id: number;
-  userId: string;
+  id: string;
   name: string;
   email: string;
   emailVerified: boolean;
   image: string;
-  username: string;
+  username: string | null;
   role: "SUPER_ADMIN" | "ADMIN" | "USER";
   department: unknown;
   status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
@@ -37,38 +38,98 @@ type StoredUser = {
 };
 
 type StoredAccount = {
-  id: number;
+  id: string;
   accountId: string;
   providerId: string;
   password: string | null;
-  userId: number;
+  userId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  idToken: string | null;
+  accessTokenExpiresAt: Date | null;
+  refreshTokenExpiresAt: Date | null;
+  scope: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type StoredSession = {
-  id: number;
-  tokenHash: string;
+  id: string;
+  token: string;
   expiresAt: Date;
-  ipAddress: string;
-  userAgent: string;
-  userId: number;
+  ipAddress: string | null;
+  userAgent: string | null;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type StoredVerification = {
+  id: string;
+  identifier: string;
+  value: string;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 const ADMIN_EMAIL = "admin@local.auth";
 const ADMIN_PASSWORD = "Demo#2026.";
 
+// --- WHERE clause resolver -----------------------------------------------
+// BetterAuth's prismaAdapter wraps equality conditions as { field: { equals: value } }
+// while our application code uses the shorthand { field: value }.
+// This helper handles both formats, plus AND/OR combinators.
+
+type WhereClause = Record<string, unknown>;
+
+function resolveValue(condition: unknown): { op: "eq"; value: unknown } | null {
+  if (condition === null || condition === undefined) return { op: "eq", value: condition };
+  if (typeof condition !== "object") return { op: "eq", value: condition };
+  const obj = condition as Record<string, unknown>;
+  if ("equals" in obj) return { op: "eq", value: obj["equals"] };
+  return null;
+}
+
+function matchesWhere(record: Record<string, unknown>, where: WhereClause): boolean {
+  for (const [key, condition] of Object.entries(where)) {
+    if (key === "AND" && Array.isArray(condition)) {
+      if (!condition.every((c: WhereClause) => matchesWhere(record, c))) return false;
+      continue;
+    }
+    if (key === "OR" && Array.isArray(condition)) {
+      if (!condition.some((c: WhereClause) => matchesWhere(record, c))) return false;
+      continue;
+    }
+    const resolved = resolveValue(condition);
+    if (resolved) {
+      if (record[key] !== resolved.value) return false;
+    } else {
+      // Nested object without "equals" — skip (e.g. unsupported operators)
+    }
+  }
+  return true;
+}
+
+// --- Fake Prisma compatible with BetterAuth's prismaAdapter call patterns ---
+
 class FakePrismaService {
   private users: StoredUser[] = [];
   private accounts: StoredAccount[] = [];
   private sessions: StoredSession[] = [];
-  private nextSessionId = 1;
-  private nextAccountId = 1;
+  private verifications: StoredVerification[] = [];
+  private idCounter = 0;
+
+  private nextId() {
+    return `fake_${++this.idCounter}`;
+  }
 
   reset() {
     this.users = [];
     this.accounts = [];
     this.sessions = [];
-    this.nextSessionId = 1;
-    this.nextAccountId = 1;
+    this.verifications = [];
+    this.idCounter = 0;
   }
 
   seedUser(input: {
@@ -76,38 +137,95 @@ class FakePrismaService {
     passwordHash: string;
   }) {
     const now = new Date("2026-05-01T00:00:00.000Z");
-    const user: StoredUser = {
-      lastLogin: null,
-      createdAt: now,
-      updatedAt: now,
-      ...input.user,
-    };
+    const user: StoredUser = { lastLogin: null, createdAt: now, updatedAt: now, ...input.user };
     this.users.push(user);
     this.accounts.push({
-      id: this.nextAccountId++,
+      id: this.nextId(),
+      // BetterAuth credential accounts use email as accountId
       accountId: input.user.email,
       providerId: "credential",
       password: input.passwordHash,
       userId: input.user.id,
+      accessToken: null,
+      refreshToken: null,
+      idToken: null,
+      accessTokenExpiresAt: null,
+      refreshTokenExpiresAt: null,
+      scope: null,
+      createdAt: now,
+      updatedAt: now,
     });
   }
 
   readonly user = {
-    findUnique: async ({ where }: { where: { email?: string; id?: number } }) =>
-      this.users.find(
-        (user) =>
-          (where.email !== undefined && user.email === where.email) ||
-          (where.id !== undefined && user.id === where.id),
-      ) ?? null,
+    findUnique: async ({
+      where,
+    }: {
+      where: WhereClause;
+      select?: unknown;
+    }): Promise<StoredUser | null> =>
+      this.users.find((u) => matchesWhere(u as unknown as Record<string, unknown>, where)) ?? null,
+
+    findFirst: async ({
+      where,
+    }: {
+      where: WhereClause;
+      select?: unknown;
+    }): Promise<StoredUser | null> =>
+      this.users.find((u) => matchesWhere(u as unknown as Record<string, unknown>, where)) ?? null,
+
+    create: async ({
+      data,
+    }: {
+      data: Partial<StoredUser> & { id?: string };
+      select?: unknown;
+    }): Promise<StoredUser> => {
+      const now = new Date();
+      const user: StoredUser = {
+        id: data.id ?? this.nextId(),
+        name: data.name ?? "",
+        email: data.email ?? "",
+        emailVerified: data.emailVerified ?? false,
+        image: data.image ?? "",
+        username: data.username ?? null,
+        role: (data.role as StoredUser["role"]) ?? "USER",
+        department: data.department ?? [],
+        status: (data.status as StoredUser["status"]) ?? "ACTIVE",
+        lastLogin: null,
+        createdAt: data.createdAt ?? now,
+        updatedAt: data.updatedAt ?? now,
+      };
+      this.users.push(user);
+      return user;
+    },
+
+    findMany: async ({
+      where,
+    }: {
+      where?: WhereClause;
+      take?: number;
+      skip?: number;
+      orderBy?: unknown;
+      select?: unknown;
+    }): Promise<StoredUser[]> => {
+      if (!where) return [...this.users];
+      return this.users.filter((u) =>
+        matchesWhere(u as unknown as Record<string, unknown>, where),
+      );
+    },
+
     update: async ({
       where,
       data,
     }: {
-      where: { id: number };
+      where: WhereClause;
       data: Partial<StoredUser>;
-    }) => {
-      const found = this.users.find((user) => user.id === where.id);
-      if (!found) throw new Error("User not found");
+      select?: unknown;
+    }): Promise<StoredUser> => {
+      const found = this.users.find((u) =>
+        matchesWhere(u as unknown as Record<string, unknown>, where),
+      );
+      if (!found) throw new Error(`User not found for where: ${JSON.stringify(where)}`);
       Object.assign(found, data);
       found.updatedAt = new Date();
       return found;
@@ -118,82 +236,230 @@ class FakePrismaService {
     findFirst: async ({
       where,
     }: {
-      where: { userId: number; providerId: string };
-    }) =>
-      this.accounts.find(
-        (account) =>
-          account.userId === where.userId &&
-          account.providerId === where.providerId,
+      where: WhereClause;
+      select?: unknown;
+    }): Promise<StoredAccount | null> =>
+      this.accounts.find((a) =>
+        matchesWhere(a as unknown as Record<string, unknown>, where),
       ) ?? null,
+
+    create: async ({
+      data,
+    }: {
+      data: Partial<StoredAccount> & { id?: string };
+      select?: unknown;
+    }): Promise<StoredAccount> => {
+      const now = new Date();
+      const account: StoredAccount = {
+        id: data.id ?? this.nextId(),
+        accountId: data.accountId ?? "",
+        providerId: data.providerId ?? "",
+        password: data.password ?? null,
+        userId: data.userId ?? "",
+        accessToken: data.accessToken ?? null,
+        refreshToken: data.refreshToken ?? null,
+        idToken: data.idToken ?? null,
+        accessTokenExpiresAt: data.accessTokenExpiresAt ?? null,
+        refreshTokenExpiresAt: data.refreshTokenExpiresAt ?? null,
+        scope: data.scope ?? null,
+        createdAt: data.createdAt ?? now,
+        updatedAt: data.updatedAt ?? now,
+      };
+      this.accounts.push(account);
+      return account;
+    },
+
+    findMany: async ({
+      where,
+    }: {
+      where?: WhereClause;
+      take?: number;
+      skip?: number;
+      orderBy?: unknown;
+      select?: unknown;
+    }): Promise<StoredAccount[]> => {
+      if (!where) return [...this.accounts];
+      return this.accounts.filter((a) =>
+        matchesWhere(a as unknown as Record<string, unknown>, where),
+      );
+    },
+
     update: async ({
       where,
       data,
     }: {
-      where: { id: number };
+      where: WhereClause;
       data: Partial<StoredAccount>;
-    }) => {
-      const found = this.accounts.find((account) => account.id === where.id);
-      if (!found) throw new Error("Account not found");
+      select?: unknown;
+    }): Promise<StoredAccount> => {
+      const found = this.accounts.find((a) =>
+        matchesWhere(a as unknown as Record<string, unknown>, where),
+      );
+      if (!found) throw new Error(`Account not found for where: ${JSON.stringify(where)}`);
       Object.assign(found, data);
+      found.updatedAt = new Date();
       return found;
     },
   };
 
   readonly session = {
+    findFirst: async ({
+      where,
+      include,
+    }: {
+      where: WhereClause;
+      include?: { user?: boolean };
+      select?: unknown;
+    }): Promise<(StoredSession & { user?: StoredUser }) | null> => {
+      const session = this.sessions.find((s) =>
+        matchesWhere(s as unknown as Record<string, unknown>, where),
+      );
+      if (!session) return null;
+      if (include?.user) {
+        const user = this.users.find((u) => u.id === session.userId);
+        return user ? { ...session, user } : null;
+      }
+      return session;
+    },
+
     create: async ({
       data,
     }: {
-      data: Omit<StoredSession, "id">;
-    }) => {
-      const session: StoredSession = { id: this.nextSessionId++, ...data };
+      data: Partial<StoredSession> & { token: string; userId: string; expiresAt: Date };
+      select?: unknown;
+    }): Promise<StoredSession> => {
+      const now = new Date();
+      const session: StoredSession = {
+        id: data.id ?? this.nextId(),
+        token: data.token,
+        expiresAt: data.expiresAt,
+        ipAddress: data.ipAddress ?? null,
+        userAgent: data.userAgent ?? null,
+        userId: data.userId,
+        createdAt: data.createdAt ?? now,
+        updatedAt: data.updatedAt ?? now,
+      };
       this.sessions.push(session);
       return session;
     },
-    findUnique: async ({
+
+    update: async ({
+      where,
+      data,
+    }: {
+      where: WhereClause;
+      data: Partial<StoredSession>;
+      select?: unknown;
+    }): Promise<StoredSession> => {
+      const found = this.sessions.find((s) =>
+        matchesWhere(s as unknown as Record<string, unknown>, where),
+      );
+      if (!found) throw new Error(`Session not found for where: ${JSON.stringify(where)}`);
+      Object.assign(found, data);
+      found.updatedAt = new Date();
+      return found;
+    },
+
+    delete: async ({
       where,
     }: {
-      where: { tokenHash: string };
-      include?: unknown;
-    }) => {
-      const session = this.sessions.find(
-        (s) => s.tokenHash === where.tokenHash,
+      where: WhereClause;
+    }): Promise<StoredSession> => {
+      const idx = this.sessions.findIndex((s) =>
+        matchesWhere(s as unknown as Record<string, unknown>, where),
       );
-      if (!session) return null;
-      const user = this.users.find((u) => u.id === session.userId);
-      if (!user) return null;
-      return { ...session, user };
+      if (idx === -1) throw new Error(`Session not found for where: ${JSON.stringify(where)}`);
+      const [removed] = this.sessions.splice(idx, 1);
+      return removed!;
     },
+
     findMany: async ({
       where,
     }: {
-      where: { userId: number };
+      where?: WhereClause;
+      take?: number;
+      skip?: number;
+      orderBy?: unknown;
       select?: unknown;
-    }) =>
-      this.sessions
-        .filter((s) => s.userId === where.userId)
-        .map((s) => ({ tokenHash: s.tokenHash })),
+    }): Promise<StoredSession[]> => {
+      if (!where) return [...this.sessions];
+      return this.sessions.filter((s) =>
+        matchesWhere(s as unknown as Record<string, unknown>, where),
+      );
+    },
+
     deleteMany: async ({
       where,
     }: {
-      where: { tokenHash?: string; userId?: number };
-    }) => {
+      where: WhereClause;
+    }): Promise<{ count: number }> => {
       const before = this.sessions.length;
-      this.sessions = this.sessions.filter((s) => {
-        if (where.tokenHash !== undefined && s.tokenHash === where.tokenHash) {
-          return false;
-        }
-        if (where.userId !== undefined && s.userId === where.userId) {
-          return false;
-        }
-        return true;
-      });
+      this.sessions = this.sessions.filter(
+        (s) => !matchesWhere(s as unknown as Record<string, unknown>, where),
+      );
       return { count: before - this.sessions.length };
     },
-    delete: async ({ where }: { where: { id: number } }) => {
-      const idx = this.sessions.findIndex((s) => s.id === where.id);
-      if (idx === -1) throw new Error("Session not found");
-      const [removed] = this.sessions.splice(idx, 1);
-      return removed!;
+  };
+
+  readonly verification = {
+    findFirst: async ({
+      where,
+    }: {
+      where: WhereClause;
+      select?: unknown;
+    }): Promise<StoredVerification | null> =>
+      this.verifications.find((v) =>
+        matchesWhere(v as unknown as Record<string, unknown>, where),
+      ) ?? null,
+
+    create: async ({
+      data,
+    }: {
+      data: Partial<StoredVerification> & { id?: string };
+      select?: unknown;
+    }): Promise<StoredVerification> => {
+      const now = new Date();
+      const v: StoredVerification = {
+        id: data.id ?? this.nextId(),
+        identifier: data.identifier ?? "",
+        value: data.value ?? "",
+        expiresAt: data.expiresAt ?? new Date(Date.now() + 3600_000),
+        createdAt: data.createdAt ?? now,
+        updatedAt: data.updatedAt ?? now,
+      };
+      this.verifications.push(v);
+      return v;
+    },
+
+    update: async ({
+      where,
+      data,
+    }: {
+      where: WhereClause;
+      data: Partial<StoredVerification>;
+    }): Promise<StoredVerification> => {
+      const found = this.verifications.find((v) =>
+        matchesWhere(v as unknown as Record<string, unknown>, where),
+      );
+      if (!found) throw new Error(`Verification not found`);
+      Object.assign(found, data);
+      found.updatedAt = new Date();
+      return found;
+    },
+
+    delete: async ({ where }: { where: WhereClause }) => {
+      const idx = this.verifications.findIndex((v) =>
+        matchesWhere(v as unknown as Record<string, unknown>, where),
+      );
+      if (idx !== -1) this.verifications.splice(idx, 1);
+    },
+
+    deleteMany: async ({ where }: { where: WhereClause }) => {
+      const before = this.verifications.length;
+      this.verifications = this.verifications.filter(
+        (v) => !matchesWhere(v as unknown as Record<string, unknown>, where),
+      );
+      return { count: before - this.verifications.length };
     },
   };
 
@@ -245,6 +511,7 @@ class FakeCacheService {
   }
 }
 
+// BetterAuth sets cookie name "real_demo.session_token" (cookiePrefix + ".session_token")
 const extractSessionCookie = (
   cookieHeader: string | string[] | undefined,
 ): string | null => {
@@ -254,7 +521,7 @@ const extractSessionCookie = (
       ? [cookieHeader]
       : [];
   for (const cookie of cookies) {
-    if (cookie.startsWith("real_demo_session=")) {
+    if (cookie.startsWith("real_demo.session_token=")) {
       return cookie.split(";")[0] ?? null;
     }
   }
@@ -285,8 +552,7 @@ describe("App (e2e)", () => {
     const passwordHash = await passwordService.hash(ADMIN_PASSWORD);
     prismaService.seedUser({
       user: {
-        id: 1,
-        userId: "u_admin",
+        id: "u_admin",
         name: "Admin User",
         email: ADMIN_EMAIL,
         emailVerified: true,
@@ -302,11 +568,6 @@ describe("App (e2e)", () => {
 
   beforeEach(() => {
     cacheService.reset();
-    // Re-seed the admin from the original hashed password set in beforeAll.
-    const admin = prismaService.user.findUnique({
-      where: { email: ADMIN_EMAIL },
-    });
-    void admin;
   });
 
   afterAll(async () => {
@@ -447,6 +708,13 @@ describe("App (e2e)", () => {
       .get("/api/v1/auth/me")
       .set("Cookie", sessionCookie!)
       .expect(401);
+  });
+
+  it("blocks the native BetterAuth email sign-in endpoint", async () => {
+    await request(app.getHttpServer())
+      .post("/api/auth/sign-in/email")
+      .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD })
+      .expect(403);
   });
 
   it("exposes seeded dev accounts when AUTH_DEV_LOGIN_ENABLED is true in dev", async () => {

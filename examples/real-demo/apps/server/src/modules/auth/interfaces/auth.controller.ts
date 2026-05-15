@@ -10,6 +10,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
 } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
@@ -22,6 +23,7 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { ZodResponse } from "nestjs-zod";
+import { fromNodeHeaders } from "better-auth/node";
 
 import {
   getOrCreateRequestId,
@@ -30,16 +32,13 @@ import {
 import { successResponse } from "../../../common/http/success-response";
 import { ZodValidationPipe } from "../../../common/validation/zod-validation.pipe";
 import { loadEnvironment } from "../../../common/config/env";
-import {
-  AUTH_SESSION_COOKIE_NAME,
-  AUTH_SESSION_COOKIE_PATH,
-  AUTH_SESSION_TTL_MS,
-  type SessionUserInternal,
-} from "../domain/auth.types";
+import { type SessionUserInternal } from "../domain/auth.types";
 import { AuthService } from "../application/auth.service";
 import { CaptchaService } from "../application/captcha.service";
 import { CurrentUser } from "./auth.decorator";
 import { Public } from "./auth.guard";
+import { BETTER_AUTH_TOKEN } from "../auth.tokens";
+import type { BetterAuthInstance } from "../auth.config";
 import {
   AuthApiFailureDto,
   AuthStateResponseDto,
@@ -53,9 +52,6 @@ import {
   SignInDto,
   SignInInputSchema,
 } from "./auth.swagger";
-
-const getClientIp = (request: Request) =>
-  request.ip?.trim() || request.socket?.remoteAddress?.trim() || "unknown";
 
 // Kept in sync with prisma/seed.ts so the dev-login shortcut maps to real
 // accounts. Production must keep AUTH_DEV_LOGIN_ENABLED=false (default).
@@ -77,23 +73,6 @@ const DEV_ACCOUNTS = [
   },
 ];
 
-const setSessionCookie = (response: Response, token: string) => {
-  const env = loadEnvironment();
-  response.cookie(AUTH_SESSION_COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: env.nodeEnv === "production",
-    sameSite: "lax",
-    path: AUTH_SESSION_COOKIE_PATH,
-    maxAge: AUTH_SESSION_TTL_MS,
-  });
-};
-
-const clearSessionCookie = (response: Response) => {
-  response.clearCookie(AUTH_SESSION_COOKIE_NAME, {
-    path: AUTH_SESSION_COOKIE_PATH,
-  });
-};
-
 @ApiTags("auth")
 @ApiExtraModels(
   SignInDto,
@@ -110,6 +89,7 @@ export class AuthController {
   constructor(
     @Inject(AuthService) private readonly authService: AuthService,
     @Inject(CaptchaService) private readonly captchaService: CaptchaService,
+    @Inject(BETTER_AUTH_TOKEN) private readonly auth: BetterAuthInstance,
   ) {}
 
   @Public()
@@ -153,16 +133,27 @@ export class AuthController {
     @Req() request: Request & RequestWithRequestId,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.authService.signIn({
-      email: body.email,
-      password: body.password,
-      captchaId: body.captchaId,
-      captchaAnswer: body.captchaAnswer,
-      ipAddress: getClientIp(request),
-      userAgent: request.headers["user-agent"] ?? "",
+    // Captcha must be verified before delegating to BetterAuth so the rate
+    // cost of brute-force probes is paid up front, regardless of whether the
+    // credentials are valid.
+    await this.captchaService.verifyAndConsume(body.captchaId, body.captchaAnswer);
+    // Reject inactive/suspended accounts before BetterAuth creates a session.
+    await this.authService.validateSignIn(body.email);
+
+    const baResponse = await this.auth.api.signInEmail({
+      body: { email: body.email, password: body.password },
+      headers: fromNodeHeaders(request.headers),
+      asResponse: true,
     });
 
-    setSessionCookie(response, result.token);
+    if (!baResponse.ok) {
+      throw new UnauthorizedException("Invalid email or password.");
+    }
+
+    const setCookies = baResponse.headers.getSetCookie();
+    if (setCookies.length > 0) {
+      response.setHeader("set-cookie", setCookies);
+    }
 
     return successResponse(
       { authenticated: true },
@@ -181,25 +172,22 @@ export class AuthController {
     type: AuthStateResponseDto,
   })
   async signOut(
-    @Req() request: Request,
+    @Req() request: Request & RequestWithRequestId,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const cookies = request.cookies as Record<string, string> | undefined;
-    const token = cookies?.[AUTH_SESSION_COOKIE_NAME];
+    const baResponse = await this.auth.api.signOut({
+      headers: fromNodeHeaders(request.headers),
+      asResponse: true,
+    });
 
-    if (token) {
-      await this.authService.signOut(token);
+    const setCookies = baResponse.headers.getSetCookie();
+    if (setCookies.length > 0) {
+      response.setHeader("set-cookie", setCookies);
     }
-
-    clearSessionCookie(response);
 
     return successResponse(
       { authenticated: false },
-      {
-        requestId: getOrCreateRequestId(
-          request as unknown as RequestWithRequestId,
-        ),
-      },
+      { requestId: getOrCreateRequestId(request) },
     );
   }
 
@@ -262,7 +250,15 @@ export class AuthController {
       body.newPassword,
     );
 
-    clearSessionCookie(response);
+    // All sessions were revoked inside changePassword; clear the cookie too.
+    const baResponse = await this.auth.api.signOut({
+      headers: fromNodeHeaders(request.headers),
+      asResponse: true,
+    });
+    const setCookies = baResponse.headers.getSetCookie();
+    if (setCookies.length > 0) {
+      response.setHeader("set-cookie", setCookies);
+    }
 
     return successResponse(
       { changed: true },
@@ -282,8 +278,6 @@ export class AuthController {
     type: IoaStatusResponseDto,
   })
   getIoaLoginStatus(@Req() request: Request & RequestWithRequestId) {
-    // iOA SSO is a Tencent-internal SSO scheme; the demo keeps the endpoint
-    // wired up so callers can probe it, but it never advertises itself.
     return successResponse(
       { enabled: false },
       { requestId: getOrCreateRequestId(request) },

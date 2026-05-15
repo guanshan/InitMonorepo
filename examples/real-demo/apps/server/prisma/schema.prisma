@@ -19,18 +19,13 @@ enum UserStatus {
 }
 
 model User {
-  id            Int        @id @default(autoincrement())
-  userId        String     @unique @default(cuid()) @map("user_id")
+  // id is a cuid string — serves as both the internal PK and the public
+  // user identifier (previously split across `id: Int` and `userId: String`).
+  id            String     @id @default(cuid()) @map("user_id")
   name          String
   email         String     @unique
   emailVerified Boolean    @default(false) @map("email_verified")
   image         String     @default("") @db.VarChar(512)
-  // Username is a logical identity in this system (UI uses it as a search
-  // field, the API rejects duplicates with a 409). Enforced both in the
-  // service (friendly pre-check, see UsersService) and at the database level
-  // so two concurrent writes can't slip past the application check. Empty
-  // defaults from earlier seeds are backfilled to `user_<id>` in the
-  // matching migration before the unique index is created.
   username      String     @unique
   role          UserRole   @default(USER)
   department    Json       @default("[]")
@@ -45,13 +40,15 @@ model User {
   @@map("user")
 }
 
+// BetterAuth-managed session table. `token` stores the raw session token;
+// BetterAuth handles its own signing/validation internally.
 model Session {
-  id        Int      @id @default(autoincrement())
-  tokenHash String   @unique @map("token_hash") @db.VarChar(64)
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(512)
   expiresAt DateTime @map("expires_at")
-  ipAddress String   @default("") @map("ip_address") @db.VarChar(64)
-  userAgent String   @default("") @map("user_agent") @db.VarChar(512)
-  userId    Int      @map("user_id")
+  ipAddress String?  @default("") @map("ip_address") @db.VarChar(64)
+  userAgent String?  @default("") @map("user_agent") @db.VarChar(512)
+  userId    String   @map("user_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -61,20 +58,40 @@ model Session {
   @@map("session")
 }
 
+// BetterAuth-managed account table. Stores both credential accounts (password)
+// and OAuth accounts (accessToken, refreshToken, etc.).
 model Account {
-  id         Int      @id @default(autoincrement())
-  accountId  String   @map("account_id") @db.VarChar(255)
-  providerId String   @map("provider_id") @db.VarChar(128)
-  userId     Int      @map("user_id")
-  password   String?  @db.VarChar(255)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id                    String    @id @default(cuid())
+  accountId             String    @map("account_id") @db.VarChar(255)
+  providerId            String    @map("provider_id") @db.VarChar(128)
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token") @db.Text
+  refreshToken          String?   @map("refresh_token") @db.Text
+  idToken               String?   @map("id_token") @db.Text
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?   @db.VarChar(1024)
+  password              String?   @db.VarChar(255)
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, providerId], name: "account_account_provider_uk")
   @@index([userId])
   @@map("account")
+}
+
+// Used by BetterAuth for email verification tokens, password-reset tokens, etc.
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String   @db.Text
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("verification")
 }
 
 model SystemSetting {

@@ -3,8 +3,7 @@ import type { UserRole, UserStatus } from "../domain/auth.types";
 export const AUTH_REPOSITORY_PORT = Symbol("AUTH_REPOSITORY_PORT");
 
 export interface AuthUserRecord {
-  id: number;
-  userId: string;
+  id: string;
   email: string;
   emailVerified: boolean;
   name: string;
@@ -19,43 +18,20 @@ export interface AuthUserRecord {
 }
 
 export interface AuthAccountRecord {
-  id: number;
+  id: string;
   accountId: string;
   providerId: string;
   password: string | null;
-  userId: number;
-}
-
-export interface AuthSessionRecord {
-  id: number;
-  tokenHash: string;
-  expiresAt: Date;
-  userId: number;
-  user: AuthUserRecord;
-}
-
-export interface CreateSessionInput {
-  tokenHash: string;
-  expiresAt: Date;
-  ipAddress: string;
-  userAgent: string;
-  userId: number;
+  userId: string;
 }
 
 export interface AuthRepositoryPort {
   findUserByEmail(email: string): Promise<AuthUserRecord | null>;
   findAccountByUserIdAndProvider(
-    userId: number,
+    userId: string,
     providerId: string,
   ): Promise<AuthAccountRecord | null>;
-  createSession(input: CreateSessionInput): Promise<void>;
-  findSessionByTokenHash(tokenHash: string): Promise<AuthSessionRecord | null>;
-  deleteSessionByTokenHash(tokenHash: string): Promise<void>;
-  deleteSessionsByUserId(userId: number): Promise<{ tokenHashes: string[] }>;
-  deleteExpiredSession(sessionId: number): Promise<void>;
-  updateUserLastLogin(userId: number): Promise<void>;
-  updateAccountPassword(
-    accountId: number,
-    hashedPassword: string,
-  ): Promise<void>;
+  revokeAllSessionsForUser(userId: string): Promise<void>;
+  updateUserLastLogin(userId: string): Promise<void>;
+  updateAccountPassword(accountId: string, hashedPassword: string): Promise<void>;
 }

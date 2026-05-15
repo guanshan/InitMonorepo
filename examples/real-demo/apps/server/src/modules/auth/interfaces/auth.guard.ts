@@ -9,18 +9,22 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { fromNodeHeaders } from "better-auth/node";
 import { isPublicApiEndpoint } from "@real-demo/shared";
 import type { Request } from "express";
 
 import { loadEnvironment } from "../../../common/config/env";
 import {
-  AUTH_SESSION_COOKIE_NAME,
   AUTH_USER_ACCOUNT_INACTIVE,
   AUTH_USER_ACCOUNT_SUSPENDED,
   type UserRole,
+  type UserStatus,
 } from "../domain/auth.types";
-import { SessionService } from "../application/session.service";
+import { RoleService } from "../application/role.service";
+import { BETTER_AUTH_TOKEN } from "../auth.tokens";
 import { SESSION_USER_KEY } from "./auth.decorator";
+import type { BetterAuthInstance } from "../auth.config";
+import type { SessionUserInternal } from "../domain/auth.types";
 
 export const IS_PUBLIC_KEY = "isPublic";
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -28,13 +32,25 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 export const ROLES_KEY = "roles";
 export const Roles = (...roles: UserRole[]) => SetMetadata(ROLES_KEY, roles);
 
+const parseDepartment = (raw: unknown): string[] => {
+  if (Array.isArray(raw)) return raw as string[];
+  try {
+    const parsed = JSON.parse(String(raw ?? "[]"));
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+};
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
 
   constructor(
-    @Inject(SessionService)
-    private readonly sessionService: SessionService,
+    @Inject(BETTER_AUTH_TOKEN)
+    private readonly auth: BetterAuthInstance,
+    @Inject(RoleService)
+    private readonly roleService: RoleService,
     @Inject(Reflector)
     private readonly reflector: Reflector,
   ) {}
@@ -48,10 +64,6 @@ export class AuthGuard implements CanActivate {
       ]),
     );
 
-    // The shared matrix is for drift detection, not authorization: only
-    // `@Public()` actually opens an endpoint. Treating the matrix as a
-    // bypass would let a single shared/contracts edit silently reach
-    // around the guard.
     const matrixBasePath = loadEnvironment().appBasePath;
     const isPublicByMatrix = isPublicApiEndpoint(
       request.method,
@@ -72,31 +84,52 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const token = this.extractToken(request);
+    const session = await this.auth.api.getSession({
+      headers: fromNodeHeaders(request.headers),
+    });
 
-    if (!token) {
+    if (!session) {
       throw new UnauthorizedException("Not authenticated.");
     }
 
-    const sessionUser = await this.sessionService.validate(token);
+    const { user } = session;
+    const status = user.status as UserStatus;
 
-    if (!sessionUser) {
-      throw new UnauthorizedException("Session expired or invalid.");
-    }
-
-    if (sessionUser.status === "SUSPENDED") {
+    if (status === "SUSPENDED") {
       throw new ForbiddenException({
         code: AUTH_USER_ACCOUNT_SUSPENDED,
         message: "Account is suspended.",
       });
     }
 
-    if (sessionUser.status !== "ACTIVE") {
+    if (status !== "ACTIVE") {
       throw new ForbiddenException({
         code: AUTH_USER_ACCOUNT_INACTIVE,
         message: "Account is not active.",
       });
     }
+
+    const department = parseDepartment(user.department);
+    const resolvedRole = await this.roleService.resolveUserRole({
+      baseRole: user.role as UserRole,
+      department,
+    });
+
+    const sessionUser: SessionUserInternal = {
+      id: user.id,
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      image: user.image ?? "",
+      username: (user.username as string | null) ?? user.name,
+      role: resolvedRole.role,
+      baseRole: resolvedRole.baseRole,
+      roleSource: resolvedRole.roleSource,
+      department,
+      status,
+      createdAt: new Date(user.createdAt),
+      updatedAt: new Date(user.updatedAt),
+    };
 
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
       ROLES_KEY,
@@ -115,19 +148,5 @@ export class AuthGuard implements CanActivate {
     (request as unknown as Record<string, unknown>)[SESSION_USER_KEY] =
       sessionUser;
     return true;
-  }
-
-  private extractToken(request: Request): string | undefined {
-    const cookies = request.cookies as Record<string, string> | undefined;
-    if (cookies?.[AUTH_SESSION_COOKIE_NAME]) {
-      return cookies[AUTH_SESSION_COOKIE_NAME];
-    }
-
-    const authHeader = request.headers.authorization;
-    if (authHeader?.startsWith("Bearer ")) {
-      return authHeader.slice(7);
-    }
-
-    return undefined;
   }
 }

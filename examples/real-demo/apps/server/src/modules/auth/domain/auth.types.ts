@@ -9,7 +9,10 @@ export const ROLE_PRIORITY = {
 } as const satisfies { readonly [K in UserRole]: number };
 
 export interface SessionUserInternal {
-  id: number;
+  // id is the cuid string primary key (previously the separate `userId` field).
+  id: string;
+  // userId is kept as a public-API alias so downstream consumers and the
+  // generated SDK schema remain unchanged after the schema migration.
   userId: string;
   name: string;
   email: string;
@@ -23,10 +26,6 @@ export interface SessionUserInternal {
   createdAt: Date;
   updatedAt: Date;
 }
-
-export const AUTH_SESSION_COOKIE_NAME = "real_demo_session";
-export const AUTH_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-export const AUTH_SESSION_COOKIE_PATH = "/";
 
 export const AUTH_USER_ACCOUNT_SUSPENDED = "AUTH_USER_ACCOUNT_SUSPENDED";
 export const AUTH_USER_ACCOUNT_INACTIVE = "AUTH_USER_ACCOUNT_INACTIVE";

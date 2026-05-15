@@ -14,6 +14,8 @@ const EnvironmentSchema = z.object({
   APP_BASE_PATH: z.string().default("/"),
   APP_RUNTIME_API_BASE_URL: z.string().default(""),
   AUTH_DEV_LOGIN_ENABLED: BooleanEnvironmentSchema,
+  BETTER_AUTH_SECRET: z.string().default(""),
+  BETTER_AUTH_URL: z.string().default(""),
   CORS_ORIGIN: z.string().default("http://localhost:14000"),
   DATABASE_URL: z.string().trim().optional(),
   LOG_LEVEL: z
@@ -33,6 +35,8 @@ type TrustProxyValue = boolean | number | string | string[];
 type Environment = {
   appBasePath: string;
   authDevLoginEnabled: boolean;
+  betterAuthSecret: string;
+  betterAuthUrl: string;
   corsOrigins: string[];
   databaseUrl: string;
   logLevel: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent";
@@ -117,6 +121,26 @@ export const loadEnvironment = (): Environment => {
       : normalizedAppBasePath === "/"
         ? ""
         : normalizedAppBasePath;
+  const isProd = parsed.NODE_ENV === "production";
+  const betterAuthUrl = parsed.BETTER_AUTH_URL.trim()
+    ? parsed.BETTER_AUTH_URL.trim()
+    : isProd
+      ? (() => {
+          throw new Error(
+            "BETTER_AUTH_URL must be provided via the environment for production deployments.",
+          );
+        })()
+      : `http://localhost:${parsed.PORT}`;
+  const betterAuthSecret = parsed.BETTER_AUTH_SECRET.trim()
+    ? parsed.BETTER_AUTH_SECRET.trim()
+    : isProd
+      ? (() => {
+          throw new Error(
+            "BETTER_AUTH_SECRET must be provided via the environment for production deployments.",
+          );
+        })()
+      : "dev-secret-replace-in-production";
+
   const localDatabaseUrl = "mysql://app:app@localhost:13306/real_demo";
   const localRedisUrl = "redis://localhost:16379";
   const databaseUrl = resolveConnectionString(
@@ -133,6 +157,8 @@ export const loadEnvironment = (): Environment => {
   return {
     appBasePath: normalizedAppBasePath,
     authDevLoginEnabled: parsed.AUTH_DEV_LOGIN_ENABLED,
+    betterAuthSecret,
+    betterAuthUrl,
     corsOrigins: [
       ...new Set(
         parsed.CORS_ORIGIN.split(",").flatMap(expandLoopbackCorsOrigin),

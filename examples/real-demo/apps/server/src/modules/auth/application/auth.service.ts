@@ -9,18 +9,8 @@ import {
   AUTH_REPOSITORY_PORT,
   type AuthRepositoryPort,
 } from "./auth-repository.port";
-import { CaptchaService } from "./captcha.service";
 import { PasswordService } from "./password.service";
 import { SessionService } from "./session.service";
-
-interface SignInInput {
-  email: string;
-  password: string;
-  captchaId: string;
-  captchaAnswer: string;
-  ipAddress: string;
-  userAgent: string;
-}
 
 @Injectable()
 export class AuthService {
@@ -29,64 +19,17 @@ export class AuthService {
     private readonly authRepo: AuthRepositoryPort,
     @Inject(PasswordService) private readonly passwordService: PasswordService,
     @Inject(SessionService) private readonly sessionService: SessionService,
-    @Inject(CaptchaService) private readonly captchaService: CaptchaService,
   ) {}
 
-  async signIn(input: SignInInput): Promise<{ token: string; userId: string }> {
-    // Captcha is consumed before the password check so the rate cost of
-    // brute-force attempts and unauthenticated probes is paid up front.
-    await this.captchaService.verifyAndConsume(
-      input.captchaId,
-      input.captchaAnswer,
-    );
-
-    const user = await this.authRepo.findUserByEmail(
-      input.email.toLowerCase().trim(),
-    );
-
-    if (!user) {
-      throw new UnauthorizedException("Invalid email or password.");
-    }
-
-    if (user.status !== "ACTIVE") {
+  async validateSignIn(email: string): Promise<void> {
+    const user = await this.authRepo.findUserByEmail(email.toLowerCase().trim());
+    if (user && user.status !== "ACTIVE") {
       throw new UnauthorizedException("Account is not active.");
     }
-
-    const account = await this.authRepo.findAccountByUserIdAndProvider(
-      user.id,
-      "credential",
-    );
-
-    if (!account?.password) {
-      throw new UnauthorizedException("Invalid email or password.");
-    }
-
-    const passwordValid = await this.passwordService.verify(
-      input.password,
-      account.password,
-    );
-
-    if (!passwordValid) {
-      throw new UnauthorizedException("Invalid email or password.");
-    }
-
-    await this.authRepo.updateUserLastLogin(user.id);
-
-    const token = await this.sessionService.create({
-      userId: user.id,
-      ipAddress: input.ipAddress,
-      userAgent: input.userAgent,
-    });
-
-    return { token, userId: user.userId };
-  }
-
-  async signOut(token: string): Promise<void> {
-    await this.sessionService.revoke(token);
   }
 
   async changePassword(
-    userId: number,
+    userId: string,
     currentPassword: string,
     newPassword: string,
   ): Promise<void> {
